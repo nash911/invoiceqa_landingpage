@@ -4,7 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UTMProvider } from "@/components/UTMProvider";
 import { Toaster } from "@/components/ui/toaster";
-import { loadClarity } from "@/lib/analytics";
 import Script from "next/script";
 
 const geistSans = Geist({
@@ -29,6 +28,9 @@ export const metadata: Metadata = {
     "tax validation",
   ],
   authors: [{ name: "InvoiceQA" }],
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
   openGraph: {
     title: "InvoiceQA - Catch costly invoice errors automatically",
     description:
@@ -93,4 +95,3 @@ export default function RootLayout({
     </html>
   );
 }
-

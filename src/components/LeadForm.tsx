@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useUTM } from "./UTMProvider";
-import { LeadFormData, LeadSubmission } from "@/types/lead";
+import { LeadSubmission } from "@/types/lead";
 
 const leadSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -205,4 +205,3 @@ export function LeadForm() {
     </section>
   );
 }
-
