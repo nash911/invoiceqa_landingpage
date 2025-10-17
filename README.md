@@ -1,4 +1,4 @@
-'''# InvoiceQA Landing Page
+# InvoiceQA Landing Page
 
 This repository contains the source code for the InvoiceQA landing page, a production-ready site built with Next.js, Tailwind CSS, Firebase, and Supabase.
 
@@ -155,4 +155,32 @@ To measure performance, run a Lighthouse audit in Chrome DevTools:
     - **Rate Limiting**: A simple in-memory token bucket algorithm limits the number of requests per IP address.
 - **Bot Protection**: The lead form includes a hidden honeypot field and a minimum dwell time requirement to deter simple bots.
 
-'''
+## Tailwind v4 Semantic Tokens (@theme)
+
+This project uses Tailwind CSS v4 with semantic color tokens (shadcn-style) mapped via an `@theme` block.
+
+- Where: See `src/app/globals.css`.
+  - `:root` and `.dark` define CSS variables like `--background`, `--foreground`, `--border`, etc.
+  - The `@theme` block maps them to Tailwind colors like `--color-background`, `--color-border`, enabling utilities: `bg-background`, `text-foreground`, `border-border`, `ring-ring`, etc.
+- Why: Tailwind v4 shifts theme configuration into CSS. This keeps tokens colocated with styles and removes the need for a separate `tailwind.config.js` just for colors.
+
+Common usages
+- Page base: `bg-background text-foreground`
+- Borders and inputs: `border-border`, `border-input`
+- Focus styles: `focus-visible:ring-1 focus-visible:ring-ring ring-offset-background`
+- Muted/accent: `text-muted-foreground`, `bg-muted/30`, `bg-accent`
+- Opacity modifiers work: `bg-background/80`, `text-foreground/90`
+
+Adding or changing a token
+1. Add/update the CSS variables in `:root` and `.dark`, e.g.:
+   - `--brand: 220 90% 55%` and optional `--brand-foreground`
+2. Map them in the `@theme` block:
+   - `--color-brand: hsl(var(--brand));`
+   - (optional) `--color-brand-foreground: hsl(var(--brand-foreground));`
+3. Use them in classes:
+   - Background/text: `bg-brand text-brand-foreground`
+   - Borders/rings: `border-brand focus:ring-brand`
+
+Notes
+- Keep using `@tailwindcss/postcss` (already configured in `postcss.config.mjs`). No separate `tailwind.config.js` is required for these colors in v4.
+- Dark mode is handled by the `.dark` class swapping variable values; utilities automatically reflect the correct colors.
