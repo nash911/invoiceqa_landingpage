@@ -93,6 +93,15 @@ export function LeadForm() {
         body: JSON.stringify(payload),
       });
 
+      // Safely handle non-JSON responses
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response from /api/lead:", text);
+        toast.error("Unexpected server response. Please try again.");
+        return;
+      }
+
       const result = await response.json();
 
       if (result.ok) {
