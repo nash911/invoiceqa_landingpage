@@ -184,3 +184,51 @@ Adding or changing a token
 Notes
 - Keep using `@tailwindcss/postcss` (already configured in `postcss.config.mjs`). No separate `tailwind.config.js` is required for these colors in v4.
 - Dark mode is handled by the `.dark` class swapping variable values; utilities automatically reflect the correct colors.
+
+## Environment variables (.env)
+
+This project uses both public and server-only environment variables.
+
+- Public (client-exposed): prefix with `NEXT_PUBLIC_` and safe to ship to the browser.
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_CLARITY_PROJECT_ID`
+  - `NEXT_PUBLIC_CALENDLY_URL`
+  - `NEXT_PUBLIC_SITE_URL`
+
+- Server-only (never expose to client): do NOT prefix with `NEXT_PUBLIC_`. Keep only in server contexts.
+  - `SUPABASE_URL` — Supabase project URL, used by the Next.js API route in local dev.
+  - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key, used by the Next.js API route in local dev and by the Firebase Function in production (via Firebase Secrets).
+
+Where they’re used
+- Next.js API route (local dev): `src/app/api/lead/route.ts`
+  - Reads `process.env.SUPABASE_URL` and `process.env.SUPABASE_SERVICE_ROLE_KEY` to insert rows into `leads`.
+  - This route exists to make `/api/lead` work in local development without requiring the Firebase emulator.
+- Firebase Cloud Function (production): `functions/src/lead.ts`
+  - Reads secrets configured in Firebase (not from `.env.local`).
+  - Set via CLI (see Security Notes):
+    ```bash
+    firebase functions:secrets:set SUPABASE_URL
+    firebase functions:secrets:set SUPABASE_SERVICE_ROLE_KEY
+    # Optional: restrict allowed origins for CORS
+    firebase functions:secrets:set ALLOW_ORIGINS
+    ```
+
+Local development
+- Copy the template and fill values:
+  ```bash
+  cp .env.local.example .env.local
+  # Then edit .env.local and set:
+  # SUPABASE_URL
+  # SUPABASE_SERVICE_ROLE_KEY (server-only)
+  # NEXT_PUBLIC_* values (public)
+  ```
+- The form posts to `/api/lead`:
+  - In local dev, this hits the Next.js route (uses server-only envs above).
+  - In production on Firebase Hosting, the `firebase.json` rewrite routes `/api/lead` to the Cloud Function `lead` (uses Firebase Secrets).
+
+Important: do not expose secrets
+- Never put the service role key behind a `NEXT_PUBLIC_` prefix.
+- Do not commit `.env.local` (it’s ignored by `.gitignore`).
+- In production, keep secrets exclusively in Firebase Secrets.
+- If a secret is ever committed or shared, rotate it in Supabase and update it in Firebase Secrets and your local `.env.local`.
+
