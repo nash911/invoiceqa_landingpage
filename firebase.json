@@ -40,6 +40,13 @@
   },
   "functions": {
     "source": "functions",
-    "runtime": "nodejs20"
+    "runtime": "nodejs20",
+    "endpoints": {
+      "lead": {
+        "region": "europe-west1",
+        "httpsTrigger": {},
+        "invoker": ["public"]
+      }
+    }
   }
 }
