@@ -12,7 +12,10 @@
     "rewrites": [
       {
         "source": "/api/lead",
-        "function": "lead"
+        "function": {
+          "functionId": "lead",
+          "region": "europe-west1"
+        }
       }
     ],
     "headers": [

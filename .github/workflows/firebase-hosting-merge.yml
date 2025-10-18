@@ -31,7 +31,23 @@ jobs:
             cloudbuild.googleapis.com \
             logging.googleapis.com \
             --quiet
-      - run: npm ci && npm run build
+      - name: Create .env.production
+        run: |
+          cat > .env.production << 'EOF'
+          NEXT_PUBLIC_CALENDLY_URL=${{ secrets.NEXT_PUBLIC_CALENDLY_URL }}
+          NEXT_PUBLIC_SITE_URL=${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_CLARITY_PROJECT_ID=${{ secrets.NEXT_PUBLIC_CLARITY_PROJECT_ID }}
+          EOF
+      - name: Build Next.js
+        run: npm ci && npm run build
+        env:
+          NEXT_PUBLIC_CALENDLY_URL: ${{ secrets.NEXT_PUBLIC_CALENDLY_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_CLARITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_CLARITY_PROJECT_ID }}
+      - name: Install Functions dependencies
+        run: npm ci --prefix functions
+      - name: Deploy Cloud Functions (lead)
+        run: npx firebase-tools@latest deploy --only functions:lead --project invoiceqa-91192 --non-interactive --force
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
