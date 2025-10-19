@@ -199,6 +199,7 @@ This project uses both public and server-only environment variables.
 - Server-only (never expose to client): do NOT prefix with `NEXT_PUBLIC_`. Keep only in server contexts.
   - `SUPABASE_URL` — Supabase project URL, used by the Next.js API route in local dev.
   - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key, used by the Next.js API route in local dev and by the Firebase Function in production (via Firebase Secrets).
+  - `LEAD_FUNCTION_URL` — Private Cloud Function URL used by the production proxy (`/api/lead`) to forward submissions with an identity token.
 
 Where they’re used
 - Next.js API route (local dev): `src/app/api/dev/lead/route.ts`
@@ -213,6 +214,9 @@ Where they’re used
     # Configure CORS allowlist (comma-separated)
     firebase functions:secrets:set ALLOW_ORIGINS "https://www.invoiceqa.com,https://invoiceqa.com"
     ```
+- Next.js proxy route (production): `src/app/api/lead/route.ts`
+  - Obtains an identity token from the metadata server and forwards the request to `LEAD_FUNCTION_URL`.
+  - Keeps the Supabase service role key confined to Firebase Secrets; only the Cloud Function handles inserts.
 
 Local development
 - Copy the template and fill values:
@@ -221,11 +225,12 @@ Local development
   # Then edit .env.local and set:
   # SUPABASE_URL
   # SUPABASE_SERVICE_ROLE_KEY (server-only)
+  # LEAD_FUNCTION_URL (optional, only needed when hitting staging/prod Cloud Function)
   # NEXT_PUBLIC_* values (public)
   ```
 - The form posts to the URL defined by `NEXT_PUBLIC_LEAD_ENDPOINT`:
-  - Set it to `/api/dev/lead` for local development (handled by the Next.js route).
-  - For production deployments, point it directly at the Cloud Function URL (e.g., `https://europe-west1-your-project.cloudfunctions.net/lead`) so the request bypasses the Next.js runtime.
+  - Set it to `/api/dev/lead` for local development (handled by the local Next.js route).
+  - For production deployments, set it to `/api/lead`. The proxy route will forward to the Cloud Function defined by `LEAD_FUNCTION_URL`.
 
 Important: do not expose secrets
 - Never put the service role key behind a `NEXT_PUBLIC_` prefix.
