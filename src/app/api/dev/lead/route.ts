@@ -44,6 +44,17 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "The /api/dev/lead route is only available in development. Use the Firebase Cloud Function endpoint in production.",
+      },
+      { status: 410 }
+    );
+  }
+
   // Enforce JSON content type
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -116,6 +127,17 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "The /api/dev/lead route is only available in development. Use the Firebase Cloud Function endpoint in production.",
+      },
+      { status: 410 }
+    );
+  }
+
   // Method not allowed to mirror the function
   return NextResponse.json({ ok: false, error: "Method not allowed" }, { status: 405 });
 }
