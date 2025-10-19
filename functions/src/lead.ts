@@ -38,7 +38,7 @@ function applyCorsHeaders(res: Response, origin: string | undefined, allowAll: b
 
   res.set("Vary", "Origin");
   res.set("Access-Control-Allow-Methods", "POST,OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
+  res.set("Access-Control-Allow-Headers", "Content-Type,Authorization");
   res.set("Access-Control-Max-Age", "3600");
   res.set("Access-Control-Allow-Origin", headerOrigin);
 }
@@ -93,12 +93,22 @@ function checkRateLimit(ip: string): boolean {
 export const lead = onRequest(
   {
     region: "europe-west1",
-    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "ALLOW_ORIGINS"],
   },
   async (req, res) => {
     const { allowAll, origins } = parseAllowedOrigins();
     const requestOrigin = (req.headers.origin as string | undefined)?.trim();
     const originAllowed = isOriginAllowed(requestOrigin, allowAll, origins);
+    console.log(
+      "[lead] Incoming request",
+      JSON.stringify({
+        method: req.method,
+        origin: requestOrigin ?? "<none>",
+        allowAll,
+        origins,
+        originAllowed,
+      })
+    );
 
     if (req.method === "OPTIONS") {
       if (originAllowed) {
@@ -110,15 +120,17 @@ export const lead = onRequest(
       return;
     }
 
-    if (!originAllowed) {
-      res.status(403).json({ ok: false, error: "Origin not allowed" });
-      return;
-    }
-
     const respond = (status: number, payload: unknown) => {
-      applyCorsHeaders(res, requestOrigin, allowAll);
+      if (originAllowed) {
+        applyCorsHeaders(res, requestOrigin, allowAll);
+      }
       res.status(status).json(payload);
     };
+
+    if (!originAllowed) {
+      respond(403, { ok: false, error: "Origin not allowed" });
+      return;
+    }
 
     // Only allow POST
     if (req.method !== "POST") {
