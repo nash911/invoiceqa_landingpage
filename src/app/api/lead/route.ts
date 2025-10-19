@@ -1,74 +1,125 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { createClient } from "@supabase/supabase-js";
 
-const functionUrl = process.env.LEAD_FUNCTION_URL;
-const isDev = process.env.NODE_ENV === "development";
+// Validation schema shared with the client
+const leadSchema = z.object({
+  email: z.string().email(),
+  company: z.string().optional(),
+  invoices_per_month: z.string().optional(),
+  utm: z
+    .object({
+      utm_source: z.string().optional(),
+      utm_medium: z.string().optional(),
+      utm_campaign: z.string().optional(),
+      utm_term: z.string().optional(),
+      utm_content: z.string().optional(),
+    })
+    .optional(),
+});
 
-async function fetchIdentityToken(audience: string) {
-  const metadataUrl = `http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=${encodeURIComponent(
-    audience
-  )}&format=full`;
+const RATE_LIMIT_TOKENS = 5;
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute
+const rateLimitMap = new Map<string, { tokens: number; lastRefill: number }>();
 
-  const response = await fetch(metadataUrl, {
-    headers: {
-      "Metadata-Flavor": "Google",
-    },
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Failed to obtain identity token: ${response.status} ${text}`);
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  let bucket = rateLimitMap.get(ip);
+  if (!bucket) {
+    bucket = { tokens: RATE_LIMIT_TOKENS, lastRefill: now };
+    rateLimitMap.set(ip, bucket);
   }
-
-  return response.text();
+  const timePassed = now - bucket.lastRefill;
+  const tokensToAdd = Math.floor(timePassed / RATE_LIMIT_WINDOW) * RATE_LIMIT_TOKENS;
+  if (tokensToAdd > 0) {
+    bucket.tokens = Math.min(RATE_LIMIT_TOKENS, bucket.tokens + tokensToAdd);
+    bucket.lastRefill = now;
+  }
+  if (bucket.tokens > 0) {
+    bucket.tokens--;
+    return true;
+  }
+  return false;
 }
 
-async function proxyToCloudFunction(body: string) {
-  if (!functionUrl) {
-    throw new Error("Missing LEAD_FUNCTION_URL environment variable");
+function getSupabaseClient() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
   }
 
-  const identityToken = await fetchIdentityToken(functionUrl);
-
-  const response = await fetch(functionUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${identityToken}`,
-    },
-    body,
-  });
-
-  const contentType = response.headers.get("content-type") ?? "";
-
-  if (!contentType.includes("application/json")) {
-    const text = await response.text();
-    return NextResponse.json(
-      { ok: false, error: "Unexpected response from lead handler", details: text },
-      { status: 502 }
-    );
-  }
-
-  const data = await response.json();
-  return NextResponse.json(data, { status: response.status });
+  return createClient(supabaseUrl, supabaseKey);
 }
 
 export async function POST(req: NextRequest) {
-  if (isDev) {
+  const contentType = req.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    return NextResponse.json({ ok: false, error: "Invalid Content-Type" }, { status: 400 });
+  }
+
+  const xff = req.headers.get("x-forwarded-for") || "";
+  const ip = (xff.split(",")[0] || req.headers.get("x-real-ip") || "unknown").trim();
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ ok: false, error: "Too many requests" }, { status: 429 });
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false, error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const parsed = leadSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { ok: false, error: "Use /api/dev/lead for local development submissions." },
+      { ok: false, error: "Invalid request data", details: parsed.error.issues },
       { status: 400 }
     );
   }
 
+  const data = parsed.data;
+
   try {
-    const body = await req.text();
-    return await proxyToCloudFunction(body);
+    const supabase = getSupabaseClient();
+
+    const leadRow = {
+      email: data.email,
+      company: data.company ?? null,
+      invoices_per_month: data.invoices_per_month ?? null,
+      utm_source: data.utm?.utm_source ?? null,
+      utm_medium: data.utm?.utm_medium ?? null,
+      utm_campaign: data.utm?.utm_campaign ?? null,
+      utm_term: data.utm?.utm_term ?? null,
+      utm_content: data.utm?.utm_content ?? null,
+      user_agent: req.headers.get("user-agent") ?? null,
+      ip,
+      referer: req.headers.get("referer") || req.headers.get("referrer") || null,
+    };
+
+    const { data: inserted, error } = await supabase.from("leads").insert([leadRow]).select();
+
+    if (error) {
+      if ((error as { code?: string; message?: string }).code === "23505" || error.message?.includes("duplicate")) {
+        return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
+      }
+      console.error("Supabase error:", error);
+      return NextResponse.json({ ok: false, error: "Failed to save lead" }, { status: 500 });
+    }
+
+    console.log("Lead captured:", inserted);
+    return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
-    console.error("Failed to proxy lead submission:", error);
+    console.error("Lead submission error:", error);
     return NextResponse.json(
-      { ok: false, error: "Lead submission proxy error. Please try again later." },
-      { status: 502 }
+      {
+        ok: false,
+        error:
+          "Server configuration error. Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in the environment.",
+      },
+      { status: 500 }
     );
   }
 }

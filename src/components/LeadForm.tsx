@@ -19,20 +19,7 @@ import { useRouter } from "next/navigation";
 import { useUTM } from "./UTMProvider";
 import { LeadSubmission } from "@/types/lead";
 
-const leadEndpoint = (() => {
-  const envEndpoint = process.env.NEXT_PUBLIC_LEAD_ENDPOINT;
-  if (envEndpoint) {
-    return envEndpoint;
-  }
-
-  if (process.env.NODE_ENV !== "development") {
-    console.warn(
-      "NEXT_PUBLIC_LEAD_ENDPOINT is not configured; defaulting to /api/lead. Configure the Cloud Function URL for production."
-    );
-  }
-
-  return process.env.NODE_ENV === "development" ? "/api/dev/lead" : "/api/lead";
-})();
+const leadEndpoint = process.env.NEXT_PUBLIC_LEAD_ENDPOINT ?? "/api/lead";
 
 const leadSchema = z.object({
   email: z.string().email("Please enter a valid email address"),

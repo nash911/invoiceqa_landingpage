@@ -7,10 +7,10 @@ This repository contains the source code for the InvoiceQA landing page, a produ
 - **Modern Frontend**: Built with Next.js 14+ (App Router) and TypeScript.
 - **Premium Design**: Styled with Tailwind CSS and shadcn/ui for a premium, conversion-focused look.
 - **Dark Mode**: System-based theme with a manual toggle.
-- **Lead Capture**: Secure HTTPS Cloud Function endpoint for capturing leads.
+- **Lead Capture**: Serverless Next.js API route that stores submissions in Supabase.
 - **Database**: Uses Supabase for lead storage, accessed securely from the backend.
 - **Analytics**: Integrated with Microsoft Clarity for user behavior insights.
-- **Hosting**: Deployed on Firebase Hosting with seamless Next.js integration.
+- **Hosting**: Optimized for Vercel deployments with edge caching.
 - **Developer Experience**: Includes ESLint, Prettier, and type-checking for code quality.
 
 ## Project Structure
@@ -22,8 +22,8 @@ This repository contains the source code for the InvoiceQA landing page, a produ
 ├── .firebaserc             # Firebase project configuration
 ├── .gitignore
 ├── .prettierrc             # Prettier configuration
-├── firebase.json           # Firebase Hosting and Functions configuration
-├── functions/              # Firebase Cloud Functions (backend)
+├── firebase.json           # Legacy Firebase Hosting configuration (unused on Vercel)
+├── functions/              # Legacy Firebase Cloud Functions (unused on Vercel)
 │   ├── src/
 │   │   ├── index.ts        # Functions entry point
 │   │   └── lead.ts         # Lead capture HTTPS function
@@ -50,9 +50,7 @@ Follow these steps to set up and run the project locally.
 
 - Node.js (v20 or later)
 - pnpm (or npm/yarn)
-- Firebase CLI (`npm i -g firebase-tools`)
 - A Supabase project
-- A Firebase project
 
 ### 2. Local Development Setup
 
@@ -98,40 +96,14 @@ Follow these steps to set up and run the project locally.
     - **URL**: Find your project URL in **Project Settings > API**.
     - **Service Role Key**: Find your `service_role` secret key in **Project Settings > API**. **Keep this secret and do not share it.**
 
-### 4. Firebase Setup & Deployment
+### 4. Deployment
 
-1.  **Log in to Firebase:**
-    ```bash
-    firebase login
-    ```
+This repository is now optimized for Vercel. Follow the detailed checklist in `DEPLOY.md` to:
 
-2.  **Initialize Firebase in the project:**
-    Although configuration files are provided, you may need to associate this project with your Firebase account.
-    ```bash
-    firebase init
-    ```
-    - Select **Hosting** and **Functions**.
-    - Choose an existing Firebase project or create a new one.
-    - When prompted, do **not** overwrite the existing `firebase.json` or other configuration files.
-
-3.  **Set Server-Side Secrets:**
-    These environment variables are for the `lead` Cloud Function and are stored securely in Firebase.
-    ```bash
-    # Replace with your Supabase Project URL
-    firebase functions:secrets:set SUPABASE_URL
-
-    # Replace with your Supabase Service Role Key
-    firebase functions:secrets:set SUPABASE_SERVICE_ROLE_KEY
-
-    # (Optional) Set allowed origins for CORS, e.g., "https://your-site.web.app"
-    firebase functions:secrets:set ALLOW_ORIGINS
-    ```
-
-4.  **Deploy to Firebase:**
-    This command will build the Next.js app, build the Cloud Function, and deploy everything to Firebase.
-    ```bash
-    firebase deploy
-    ```
+- Configure Supabase and Microsoft Clarity environment variables in the Vercel dashboard.
+- Connect the GitHub repository to a Vercel project.
+- Trigger production deployments via the Vercel pipeline.
+- Update GoDaddy DNS records to point to Vercel once you are ready to go live.
 
 ## Performance
 
@@ -149,10 +121,8 @@ To measure performance, run a Lighthouse audit in Chrome DevTools:
 
 ## Security Notes
 
-- **Service Role Key**: The `SUPABASE_SERVICE_ROLE_KEY` is highly sensitive. It is stored exclusively as a Firebase Secret and is only accessible by the Cloud Function. It is **never** exposed to the client-side.
-- **API Endpoint**: The `/api/lead` endpoint is protected against abuse with:
-    - **CORS**: Configured in `firebase.json` and can be restricted with the `ALLOW_ORIGINS` secret.
-    - **Rate Limiting**: A simple in-memory token bucket algorithm limits the number of requests per IP address.
+- **Service Role Key**: Keep `SUPABASE_SERVICE_ROLE_KEY` restricted to server-only environments (e.g., Vercel Project → Settings → Environment Variables). Never expose it to the client.
+- **API Endpoint**: The `/api/lead` handler runs inside Next.js and applies a simple in-memory rate limiter plus strict schema validation before touching Supabase.
 - **Bot Protection**: The lead form includes a hidden honeypot field and a minimum dwell time requirement to deter simple bots.
 
 ## Tailwind v4 Semantic Tokens (@theme)
@@ -194,29 +164,16 @@ This project uses both public and server-only environment variables.
   - `NEXT_PUBLIC_CLARITY_PROJECT_ID`
   - `NEXT_PUBLIC_CALENDLY_URL`
   - `NEXT_PUBLIC_SITE_URL`
-  - `NEXT_PUBLIC_LEAD_ENDPOINT`
+  - `NEXT_PUBLIC_LEAD_ENDPOINT` (defaults to `/api/lead`; override only if you run the API elsewhere)
 
-- Server-only (never expose to client): do NOT prefix with `NEXT_PUBLIC_`. Keep only in server contexts.
-  - `SUPABASE_URL` — Supabase project URL, used by the Next.js API route in local dev.
-  - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key, used by the Next.js API route in local dev and by the Firebase Function in production (via Firebase Secrets).
-  - `LEAD_FUNCTION_URL` — Private Cloud Function URL used by the production proxy (`/api/lead`) to forward submissions with an identity token.
+- Server-only (never expose to client):
+  - `SUPABASE_URL` — Supabase project URL used by the Next.js API route.
+  - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key used to insert leads (store only in secure server environments such as Vercel project settings).
 
 Where they’re used
-- Next.js API route (local dev): `src/app/api/dev/lead/route.ts`
-  - Reads `process.env.SUPABASE_URL` and `process.env.SUPABASE_SERVICE_ROLE_KEY` to insert rows into `leads`.
-  - This route exists to make `/api/dev/lead` work in local development without requiring the Firebase emulator.
-- Firebase Cloud Function (production): `functions/src/lead.ts`
-  - Reads secrets configured in Firebase (not from `.env.local`).
-  - Set via CLI (see Security Notes):
-    ```bash
-    firebase functions:secrets:set SUPABASE_URL
-    firebase functions:secrets:set SUPABASE_SERVICE_ROLE_KEY
-    # Configure CORS allowlist (comma-separated)
-    firebase functions:secrets:set ALLOW_ORIGINS "https://www.invoiceqa.com,https://invoiceqa.com"
-    ```
-- Next.js proxy route (production): `src/app/api/lead/route.ts`
-  - Obtains an identity token from the metadata server and forwards the request to `LEAD_FUNCTION_URL`.
-  - Keeps the Supabase service role key confined to Firebase Secrets; only the Cloud Function handles inserts.
+- Next.js API route: `src/app/api/lead/route.ts`
+  - Reads the Supabase credentials to insert rows into `leads`.
+  - Applies IP-based rate limiting and validation before writing.
 
 Local development
 - Copy the template and fill values:
@@ -224,16 +181,12 @@ Local development
   cp .env.local.example .env.local
   # Then edit .env.local and set:
   # SUPABASE_URL
-  # SUPABASE_SERVICE_ROLE_KEY (server-only)
-  # LEAD_FUNCTION_URL (optional, only needed when hitting staging/prod Cloud Function)
-  # NEXT_PUBLIC_* values (public)
+  # SUPABASE_SERVICE_ROLE_KEY
+  # NEXT_PUBLIC_* values
   ```
-- The form posts to the URL defined by `NEXT_PUBLIC_LEAD_ENDPOINT`:
-  - Set it to `/api/dev/lead` for local development (handled by the local Next.js route).
-  - For production deployments, set it to `/api/lead`. The proxy route will forward to the Cloud Function defined by `LEAD_FUNCTION_URL`.
+- Run `pnpm dev` and submit the form at `http://localhost:3000` to verify local Supabase writes.
 
 Important: do not expose secrets
 - Never put the service role key behind a `NEXT_PUBLIC_` prefix.
 - Do not commit `.env.local` (it’s ignored by `.gitignore`).
-- In production, keep secrets exclusively in Firebase Secrets.
-- If a secret is ever committed or shared, rotate it in Supabase and update it in Firebase Secrets and your local `.env.local`.
+- Rotate the service role key in Supabase and update Vercel environment variables if it is ever leaked.
