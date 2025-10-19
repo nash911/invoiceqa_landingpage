@@ -2,8 +2,10 @@ import { promises as fs } from "fs";
 import path from "path";
 
 const nextManifest = path.join(".next", "routes-manifest.json");
-const vercelManifestDir = path.join(".vercel", "output", "static");
-const vercelManifest = path.join(vercelManifestDir, "routes-manifest.json");
+const outputs = [
+  path.join(".vercel", "output", "routes-manifest.json"),
+  path.join(".vercel", "output", "static", "routes-manifest.json"),
+];
 
 async function copyManifest() {
   try {
@@ -13,9 +15,11 @@ async function copyManifest() {
     return;
   }
 
-  await fs.mkdir(vercelManifestDir, { recursive: true });
-  await fs.copyFile(nextManifest, vercelManifest);
-  console.log(`Copied routes-manifest.json to ${vercelManifest}`);
+  for (const target of outputs) {
+    await fs.mkdir(path.dirname(target), { recursive: true });
+    await fs.copyFile(nextManifest, target);
+    console.log(`Copied routes-manifest.json to ${target}`);
+  }
 }
 
 copyManifest().catch((error) => {
