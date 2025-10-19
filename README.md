@@ -210,8 +210,8 @@ Where they’re used
     ```bash
     firebase functions:secrets:set SUPABASE_URL
     firebase functions:secrets:set SUPABASE_SERVICE_ROLE_KEY
-    # Optional: restrict allowed origins for CORS
-    firebase functions:secrets:set ALLOW_ORIGINS
+    # Configure CORS allowlist (comma-separated)
+    firebase functions:secrets:set ALLOW_ORIGINS "https://www.invoiceqa.com,https://invoiceqa.com"
     ```
 
 Local development

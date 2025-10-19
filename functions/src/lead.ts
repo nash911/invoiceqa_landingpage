@@ -1,6 +1,47 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import type { Response } from "express";
+
+const defaultAllowedOrigins = ["https://www.invoiceqa.com", "https://invoiceqa.com"];
+
+function parseAllowedOrigins(): { allowAll: boolean; origins: string[] } {
+  const raw = process.env.ALLOW_ORIGINS;
+  if (!raw) {
+    return { allowAll: false, origins: defaultAllowedOrigins };
+  }
+
+  const entries = raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  const allowAll = entries.includes("*");
+  const origins = allowAll ? ["*"] : entries;
+
+  return { allowAll, origins: origins.length > 0 ? origins : defaultAllowedOrigins };
+}
+
+function isOriginAllowed(origin: string | undefined, allowAll: boolean, origins: string[]): boolean {
+  if (!origin) {
+    return allowAll;
+  }
+
+  return allowAll || origins.includes(origin);
+}
+
+function applyCorsHeaders(res: Response, origin: string | undefined, allowAll: boolean) {
+  const headerOrigin = allowAll ? "*" : origin ?? "";
+  if (!headerOrigin) {
+    return;
+  }
+
+  res.set("Vary", "Origin");
+  res.set("Access-Control-Allow-Methods", "POST,OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+  res.set("Access-Control-Max-Age", "3600");
+  res.set("Access-Control-Allow-Origin", headerOrigin);
+}
 
 // Validation schema
 const leadSchema = z.object({
@@ -52,13 +93,36 @@ function checkRateLimit(ip: string): boolean {
 export const lead = onRequest(
   {
     region: "europe-west1",
-    cors: true,
     secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
   },
   async (req, res) => {
+    const { allowAll, origins } = parseAllowedOrigins();
+    const requestOrigin = (req.headers.origin as string | undefined)?.trim();
+    const originAllowed = isOriginAllowed(requestOrigin, allowAll, origins);
+
+    if (req.method === "OPTIONS") {
+      if (originAllowed) {
+        applyCorsHeaders(res, requestOrigin, allowAll);
+        res.status(204).send("");
+      } else {
+        res.status(403).send("");
+      }
+      return;
+    }
+
+    if (!originAllowed) {
+      res.status(403).json({ ok: false, error: "Origin not allowed" });
+      return;
+    }
+
+    const respond = (status: number, payload: unknown) => {
+      applyCorsHeaders(res, requestOrigin, allowAll);
+      res.status(status).json(payload);
+    };
+
     // Only allow POST
     if (req.method !== "POST") {
-      res.status(405).json({ ok: false, error: "Method not allowed" });
+      respond(405, { ok: false, error: "Method not allowed" });
       return;
     }
 
@@ -70,7 +134,7 @@ export const lead = onRequest(
 
     // Rate limiting
     if (!checkRateLimit(ip)) {
-      res.status(429).json({ ok: false, error: "Too many requests" });
+      respond(429, { ok: false, error: "Too many requests" });
       return;
     }
 
@@ -78,7 +142,7 @@ export const lead = onRequest(
       // Validate request body
       const validationResult = leadSchema.safeParse(req.body);
       if (!validationResult.success) {
-        res.status(400).json({
+        respond(400, {
           ok: false,
           error: "Invalid request data",
           details: validationResult.error.errors,
@@ -94,7 +158,7 @@ export const lead = onRequest(
 
       if (!supabaseUrl || !supabaseKey) {
         console.error("Missing Supabase credentials");
-        res.status(500).json({ ok: false, error: "Server configuration error" });
+        respond(500, { ok: false, error: "Server configuration error" });
         return;
       }
 
@@ -125,21 +189,20 @@ export const lead = onRequest(
         // Check if it's a duplicate email error
         if (error.code === "23505" || error.message.includes("duplicate")) {
           // Return success for duplicates (graceful handling)
-          res.status(200).json({ ok: true, duplicate: true });
+          respond(200, { ok: true, duplicate: true });
           return;
         }
 
         console.error("Supabase error:", error);
-        res.status(500).json({ ok: false, error: "Failed to save lead" });
+        respond(500, { ok: false, error: "Failed to save lead" });
         return;
       }
 
       console.log("Lead captured:", insertedData);
-      res.status(200).json({ ok: true });
+      respond(200, { ok: true });
     } catch (error) {
       console.error("Unexpected error:", error);
-      res.status(500).json({ ok: false, error: "Internal server error" });
+      respond(500, { ok: false, error: "Internal server error" });
     }
   }
 );
-
