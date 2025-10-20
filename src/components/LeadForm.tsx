@@ -65,6 +65,15 @@ export function LeadForm() {
   }, [dwellTime]);
 
   const onSubmit = async (data: LeadFormValues) => {
+    // Fire analytics event
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("analytics", {
+          detail: { event: "form_submit_start" },
+        })
+      );
+    }
+
     if (!canSubmit) {
       toast.error("Please take a moment to review the form");
       return;
@@ -107,6 +116,14 @@ export function LeadForm() {
       const result = await response.json();
 
       if (result.ok) {
+        // Fire success analytics event
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("analytics", {
+              detail: { event: "form_submit_success" },
+            })
+          );
+        }
         toast.success("Thank you for joining our early access list!");
         router.push("/thank-you");
       } else {
@@ -128,8 +145,8 @@ export function LeadForm() {
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Join the early access list
             </h2>
-            <p className="text-xl text-muted-foreground">
-              Be among the first to experience error-free invoice processing
+            <p className="text-sm text-muted-foreground mt-2">
+              We'll email you when your invite is ready.
             </p>
           </div>
 
@@ -202,7 +219,7 @@ export function LeadForm() {
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               disabled={isSubmitting || !canSubmit}
             >
-              {isSubmitting ? "Submitting..." : "Join Early Access"}
+              {isSubmitting ? "Submitting..." : "Join the early access list"}
             </Button>
 
             {!canSubmit && dwellTime < 2 && (

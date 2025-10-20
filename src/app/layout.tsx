@@ -17,9 +17,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InvoiceQA - Catch costly invoice errors automatically",
+  title: "InvoiceQA — Catch costly invoice errors before they hit your books",
   description:
-    "Before you pay, InvoiceQA checks totals, taxes, vendor IDs, and due dates in seconds. Join the early access list.",
+    "InvoiceQA helps AP teams and bookkeepers prevent wrong payments with math & tax checks, duplicate detection, bank-change defense, fraud risk signals, and fast approvals.",
   keywords: [
     "invoice validation",
     "invoice checking",
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
   ),
   openGraph: {
-    title: "InvoiceQA - Catch costly invoice errors automatically",
+    title: "InvoiceQA — Catch costly invoice errors before they hit your books",
     description:
-      "Before you pay, InvoiceQA checks totals, taxes, vendor IDs, and due dates in seconds.",
+      "InvoiceQA helps AP teams and bookkeepers prevent wrong payments with math & tax checks, duplicate detection, bank-change defense, fraud risk signals, and fast approvals.",
     type: "website",
     url: process.env.NEXT_PUBLIC_SITE_URL,
     images: [
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "InvoiceQA - Catch costly invoice errors automatically",
+    title: "InvoiceQA — Catch costly invoice errors before they hit your books",
     description:
-      "Before you pay, InvoiceQA checks totals, taxes, vendor IDs, and due dates in seconds.",
+      "InvoiceQA helps AP teams and bookkeepers prevent wrong payments with math & tax checks, duplicate detection, bank-change defense, fraud risk signals, and fast approvals.",
     images: ["/og-image.png"],
   },
   robots: {

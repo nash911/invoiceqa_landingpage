@@ -1,17 +1,29 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Play, ArrowDown } from "lucide-react";
-import { useState } from "react";
-import { VideoModal } from "./VideoModal";
+import { ArrowDown } from "lucide-react";
+import Image from "next/image";
 
 export function Hero() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
-
   const scrollToForm = () => {
     const formElement = document.getElementById("lead-form");
     if (formElement) {
       formElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    // Fire analytics event
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("analytics", {
+          detail: { event: "hero_cta_click" },
+        })
+      );
+    }
+  };
+
+  const scrollToHowItWorks = () => {
+    const section = document.getElementById("how-it-works");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -28,12 +40,12 @@ export function Hero() {
           <div className="text-center lg:text-left space-y-6">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Catch costly invoice errors — automatically.
+                Never pay a wrong invoice again.
               </span>
             </h1>
             <h2 className="text-xl sm:text-2xl text-muted-foreground">
-              Before you pay, InvoiceQA checks totals, taxes, vendor IDs, and due
-              dates in seconds.
+              InvoiceQA flags errors, fraud risks, and approval blockers before
+              you post to the ledger.
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button
@@ -46,78 +58,34 @@ export function Hero() {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
-                onClick={() => setIsVideoOpen(true)}
+                variant="ghost"
+                onClick={scrollToHowItWorks}
+                className="hover:bg-muted"
               >
-                <Play className="mr-2 h-4 w-4" />
-                Watch 90-second demo
+                See how it works
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              No sales spam. Early access only.
+            </p>
           </div>
 
           {/* Right column: Mockup */}
           <div className="flex justify-center lg:justify-end">
-            <div className="glass rounded-xl shadow-2xl p-6 max-w-md w-full">
-              <div className="space-y-4">
-                {/* Invoice preview */}
-                <div className="bg-background/50 rounded-lg p-4 border">
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Invoice #INV-2024-0417
-                  </div>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>$1,250.00</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>VAT (21%)</span>
-                      <span>$262.50</span>
-                    </div>
-                    <div className="flex justify-between font-bold border-t pt-1 mt-1">
-                      <span>Total</span>
-                      <span>$1,512.50</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Validation results */}
-                <div className="space-y-2">
-                  <div className="text-xs font-semibold text-muted-foreground">
-                    Validation Results
-                  </div>
-                  <div className="space-y-1.5">
-                    <ValidationItem status="success" text="Math totals verified" />
-                    <ValidationItem status="success" text="VAT ID valid (NL...)" />
-                    <ValidationItem status="warning" text="Due date in 2 days" />
-                    <ValidationItem status="success" text="No duplicate found" />
-                  </div>
-                </div>
-              </div>
+            <div className="relative w-full max-w-md">
+              <Image
+                src="/placeholder-hero.png"
+                alt="InvoiceQA validation interface"
+                width={512}
+                height={512}
+                className="w-full h-auto rounded-xl shadow-2xl"
+                priority
+              />
             </div>
           </div>
         </div>
       </div>
-
-      <VideoModal open={isVideoOpen} onOpenChange={setIsVideoOpen} />
     </section>
   );
 }
 
-function ValidationItem({
-  status,
-  text,
-}: {
-  status: "success" | "warning";
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <div
-        className={`w-2 h-2 rounded-full ${
-          status === "success" ? "bg-green-500" : "bg-amber-500"
-        }`}
-      />
-      <span className="text-muted-foreground">{text}</span>
-    </div>
-  );
-}

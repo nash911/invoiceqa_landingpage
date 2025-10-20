@@ -1,53 +1,156 @@
-import { Upload, CheckCircle, Download } from "lucide-react";
+"use client";
 
-const steps = [
-  {
-    icon: Upload,
-    title: "Upload or Connect",
-    description:
-      "Upload invoices directly or connect your Gmail/Google Drive for automatic processing.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Instant Validation",
-    description:
-      "Our AI checks math, taxes, vendor IDs, due dates, and flags any issues in seconds.",
-  },
-  {
-    icon: Download,
-    title: "Export & Integrate",
-    description:
-      "Download validated results as CSV/JSON and integrate seamlessly with your accounting software.",
-  },
-];
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import Image from "next/image";
 
 export function HowItWorks() {
+  const handleTabClick = (tab: string) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("analytics", {
+          detail: { event: "howitworks_tab_click", tab },
+        })
+      );
+    }
+  };
+
   return (
-    <section className="py-20">
+    <section id="how-it-works" className="py-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">How it works</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Three simple steps to error-free invoices
+            Two ways to review: Web App or Browser Plugin.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {steps.map((step, index) => (
-            <div key={index} className="text-center">
-              <div className="relative mb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto">
-                  <step.icon className="w-8 h-8 text-white" />
-                </div>
-                <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-20 h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 -z-10 animate-pulse"></div>
+        <Tabs defaultValue="webapp" className="max-w-6xl mx-auto">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+            <TabsTrigger value="webapp" onClick={() => handleTabClick("webapp")}>
+              Web App
+            </TabsTrigger>
+            <TabsTrigger
+              value="plugin"
+              onClick={() => handleTabClick("browser_plugin")}
+            >
+              Browser Plugin
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="webapp" className="mt-8">
+            <div className="grid md:grid-cols-2 gap-8 items-start">
+              <div>
+                <h3 className="text-2xl font-semibold mb-6">
+                  Web App — clean reviews, fast approvals
+                </h3>
+                <ol className="space-y-4 text-base leading-relaxed">
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      1
+                    </span>
+                    <div>
+                      <strong>Upload or email invoices</strong> — drag-drop PDFs
+                      or forward from your AP inbox.
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      2
+                    </span>
+                    <div>
+                      <strong>Auto-extract & check</strong> — math/tax,
+                      duplicates, bank changes, and fraud risk in seconds.
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      3
+                    </span>
+                    <div>
+                      <strong>Fix exceptions fast</strong> — suggested short-pay
+                      or credit-request templates.
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      4
+                    </span>
+                    <div>
+                      <strong>Approve & export</strong> — CSV/JSON export or
+                      copy-paste into your accounting system.
+                    </div>
+                  </li>
+                </ol>
               </div>
-              <h3 className="text-xl font-semibold mb-2">
-                {index + 1}. {step.title}
-              </h3>
-              <p className="text-muted-foreground">{step.description}</p>
+              <div className="glass rounded-2xl p-4">
+                <Image
+                  src="/placeholder-webapp.png"
+                  alt="Web App preview"
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto rounded-xl"
+                />
+              </div>
             </div>
-          ))}
-        </div>
+          </TabsContent>
+
+          <TabsContent value="plugin" className="mt-8">
+            <div className="grid md:grid-cols-2 gap-8 items-start">
+              <div>
+                <h3 className="text-2xl font-semibold mb-6">
+                  Browser Plugin — catch issues right inside your inbox
+                </h3>
+                <ol className="space-y-4 text-base leading-relaxed">
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      1
+                    </span>
+                    <div>
+                      <strong>Review in Gmail/Outlook Web</strong> — the plugin
+                      highlights risks on the PDF/email.
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      2
+                    </span>
+                    <div>
+                      <strong>One-click capture</strong> — send the invoice to
+                      InvoiceQA without leaving your inbox.
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      3
+                    </span>
+                    <div>
+                      <strong>Inline checks</strong> — see duplicates, bank
+                      changes, and math/tax flags in the sidebar.
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm flex items-center justify-center font-semibold">
+                      4
+                    </span>
+                    <div>
+                      <strong>Approve or escalate</strong> — push to approvers or
+                      export instantly.
+                    </div>
+                  </li>
+                </ol>
+              </div>
+              <div className="glass rounded-2xl p-4">
+                <Image
+                  src="/placeholder-extension.png"
+                  alt="Browser Plugin preview"
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto rounded-xl"
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </section>
   );
