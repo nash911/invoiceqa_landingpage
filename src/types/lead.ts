@@ -1,7 +1,9 @@
 export interface LeadFormData {
   email: string;
-  company?: string;
+  role?: string;
+  accounting_system?: string;
   invoices_per_month?: string;
+  country?: string;
 }
 
 export interface UTMParams {
@@ -21,4 +23,3 @@ export interface LeadResponse {
   duplicate?: boolean;
   error?: string;
 }
-

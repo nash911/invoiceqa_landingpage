@@ -15,3 +15,25 @@ export function loadClarity(projectId: string): void {
   script.src = `https://www.clarity.ms/tag/${projectId}`;
   document.head.appendChild(script);
 }
+
+export function trackEvent(
+  event: string,
+  payload?: Record<string, unknown>
+): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("analytics", {
+      detail: {
+        event,
+        ...(payload ? { payload } : {}),
+      },
+    })
+  );
+}
+
+export function trackDemoOpen(): void {
+  trackEvent("demo_open");
+}

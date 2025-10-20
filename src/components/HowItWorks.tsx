@@ -1,55 +1,118 @@
-import { Upload, CheckCircle, Download } from "lucide-react";
+"use client";
 
-const steps = [
-  {
-    icon: Upload,
-    title: "Upload or Connect",
-    description:
-      "Upload invoices directly or connect your Gmail/Google Drive for automatic processing.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Instant Validation",
-    description:
-      "Our AI checks math, taxes, vendor IDs, due dates, and flags any issues in seconds.",
-  },
-  {
-    icon: Download,
-    title: "Export & Integrate",
-    description:
-      "Download validated results as CSV/JSON and integrate seamlessly with your accounting software.",
-  },
+import Image from "next/image";
+import { useState } from "react";
+import { trackDemoOpen, trackEvent } from "@/lib/analytics";
+
+const webAppSteps = [
+  "Upload or email invoices — drag-drop PDFs or forward from your AP inbox.",
+  "Auto-extract & check — math/tax, duplicates, bank changes, and fraud risk in seconds.",
+  "Fix exceptions fast — suggested short-pay or credit-request templates.",
+  "Approve & export — CSV/JSON export or copy-paste into your accounting system.",
 ];
 
+const pluginSteps = [
+  "Review in Gmail/Outlook Web — the plugin highlights risks on the PDF/email.",
+  "One-click capture — send the invoice to InvoiceQA without leaving your inbox.",
+  "Inline checks — see duplicates, bank changes, and math/tax flags in the sidebar.",
+  "Approve or escalate — push to approvers or export instantly.",
+];
+
+type TabValue = "webapp" | "browser_plugin";
+
 export function HowItWorks() {
+  const [activeTab, setActiveTab] = useState<TabValue>("webapp");
+
+  const handleTabChange = (value: TabValue) => {
+    setActiveTab(value);
+    trackEvent("howitworks_tab_click", { tab: value });
+  };
+
+  const steps = activeTab === "webapp" ? webAppSteps : pluginSteps;
+  const imageSrc =
+    activeTab === "webapp"
+      ? "/placeholder-webapp.png"
+      : "/placeholder-extension.png";
+  const imageAlt =
+    activeTab === "webapp"
+      ? "InvoiceQA web app preview"
+      : "InvoiceQA browser plugin preview";
+
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">How it works</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Three simple steps to error-free invoices
-          </p>
+    <section id="how-it-works" className="py-20">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+              How it works
+            </h2>
+            <p className="mt-2 max-w-xl text-muted-foreground">
+              Two ways to review: Web App for deep dives or the Browser Plugin for in-inbox triage.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={trackDemoOpen}
+            className="self-start text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Demo preview (coming soon)
+          </button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {steps.map((step, index) => (
-            <div key={index} className="text-center">
-              <div className="relative mb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto">
-                  <step.icon className="w-8 h-8 text-white" />
-                </div>
-                <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-20 h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 -z-10 animate-pulse"></div>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                {index + 1}. {step.title}
-              </h3>
-              <p className="text-muted-foreground">{step.description}</p>
-            </div>
-          ))}
+        <div className="mt-8">
+          <div className="inline-flex rounded-full border bg-background p-1 text-sm font-medium shadow-sm">
+            <button
+              type="button"
+              onClick={() => handleTabChange("webapp")}
+              className={`rounded-full px-5 py-2 transition-colors ${
+                activeTab === "webapp"
+                  ? "bg-primary text-primary-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Web App
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange("browser_plugin")}
+              className={`rounded-full px-5 py-2 transition-colors ${
+                activeTab === "browser_plugin"
+                  ? "bg-primary text-primary-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Browser Plugin
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-8 md:grid-cols-2 md:items-start">
+          <div>
+            <h3 className="text-xl font-semibold md:text-2xl">
+              {activeTab === "webapp"
+                ? "Web App — clean reviews, fast approvals"
+                : "Browser Plugin — catch issues right inside your inbox"}
+            </h3>
+            <ol className="mt-6 space-y-4 text-sm leading-6 text-muted-foreground">
+              {steps.map((step, index) => (
+                <li key={step} className="flex gap-3">
+                  <span className="font-semibold text-primary">{index + 1}.</span>
+                  <span className="text-foreground">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="rounded-3xl border bg-muted/30 p-4">
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              width={1200}
+              height={800}
+              className="h-auto w-full rounded-2xl object-cover"
+            />
+          </div>
         </div>
       </div>
     </section>
   );
 }
-
