@@ -1,10 +1,10 @@
 # InvoiceQA Landing Page
 
-This repository contains the source code for the InvoiceQA landing page, a production-ready site built with Next.js, Tailwind CSS, Firebase, and Supabase.
+This repository contains the source code for the InvoiceQA landing page, a production-ready site built with Next.js, Tailwind CSS, and Supabase, and deployed on Vercel.
 
 ## Features
 
-- **Modern Frontend**: Built with Next.js 14+ (App Router) and TypeScript.
+- **Modern Frontend**: Built with Next.js 15 (App Router) and TypeScript.
 - **Premium Design**: Styled with Tailwind CSS and shadcn/ui for a premium, conversion-focused look.
 - **Dark Mode**: System-based theme with a manual toggle.
 - **Lead Capture**: Serverless Next.js API route that stores submissions in Supabase.
@@ -18,18 +18,9 @@ This repository contains the source code for the InvoiceQA landing page, a produ
 ```
 /invoiceqa
 ├── .env.local.example      # Example environment variables
-├── .firebaseignore         # Files to ignore during Firebase deployment
-├── .firebaserc             # Firebase project configuration
 ├── .gitignore
 ├── .prettierrc             # Prettier configuration
-├── firebase.json           # Legacy Firebase Hosting configuration (unused on Vercel)
-├── functions/              # Legacy Firebase Cloud Functions (unused on Vercel)
-│   ├── src/
-│   │   ├── index.ts        # Functions entry point
-│   │   └── lead.ts         # Lead capture HTTPS function
-│   ├── package.json
-│   └── tsconfig.json
-├── next.config.ts
+├── next.config.mjs
 ├── package.json
 ├── public/                 # Static assets (images, sitemap, robots.txt)
 ├── src/                    # Next.js source code
@@ -74,7 +65,7 @@ Follow these steps to set up and run the project locally.
     - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL.
     - `NEXT_PUBLIC_CLARITY_PROJECT_ID`: Your Microsoft Clarity project ID.
     - `NEXT_PUBLIC_CALENDLY_URL`: Your Calendly link for booking demos.
-    - `NEXT_PUBLIC_SITE_URL`: The final public URL of your site (e.g., `https://your-project.firebaseapp.com`).
+    - `NEXT_PUBLIC_SITE_URL`: The final public URL of your site (e.g., `https://invoiceqa.app`).
 
 4.  **Start the development server:**
     ```bash

@@ -1,8 +1,0 @@
-{
-  "projects": {
-    "default": "invoiceqa-91192",
-    "prod": "invoiceqa-91192"
-  },
-  "targets": {},
-  "etags": {}
-}
