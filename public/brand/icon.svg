@@ -1,0 +1,23 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="qGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#9333ea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Q-Lens Check Icon -->
+  <g transform="translate(2, 2)">
+    <!-- Q Circle/Bowl -->
+    <circle cx="22" cy="22" r="18" stroke="url(#qGradient)" stroke-width="4.5" fill="none"/>
+    
+    <!-- Q Tail as magnifier handle -->
+    <path d="M 34 34 L 42 42" stroke="url(#qGradient)" stroke-width="4.5" stroke-linecap="round"/>
+    
+    <!-- Checkmark inside Q bowl -->
+    <path d="M 15 22 L 20 27 L 29 18" stroke="url(#qGradient)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+</svg>
+
