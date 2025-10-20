@@ -21,7 +21,7 @@ export function SocialProof() {
               </svg>
             </div>
             <blockquote className="text-lg sm:text-xl text-muted-foreground mb-6">
-              InvoiceQA caught a €2,500 calculation error before we processed
+              InvoiceQA caught a $2,500 calculation error before we processed
               payment. It paid for itself on day one.
             </blockquote>
             <div className="flex items-center justify-center gap-3">
@@ -39,4 +39,3 @@ export function SocialProof() {
     </section>
   );
 }
-

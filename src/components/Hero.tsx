@@ -67,15 +67,15 @@ export function Hero() {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
-                      <span>€1,250.00</span>
+                      <span>$1,250.00</span>
                     </div>
                     <div className="flex justify-between">
                       <span>VAT (21%)</span>
-                      <span>€262.50</span>
+                      <span>$262.50</span>
                     </div>
                     <div className="flex justify-between font-bold border-t pt-1 mt-1">
                       <span>Total</span>
-                      <span>€1,512.50</span>
+                      <span>$1,512.50</span>
                     </div>
                   </div>
                 </div>
@@ -121,4 +121,3 @@ function ValidationItem({
     </div>
   );
 }
-
