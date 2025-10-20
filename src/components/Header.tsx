@@ -39,9 +39,9 @@ export function Header() {
             <Image
               src="/brand/logo.svg"
               alt="InvoiceQA"
-              width={140}
-              height={40}
-              className="h-8 w-auto"
+              width={180}
+              height={50}
+              className="h-10 w-auto"
             />
           </div>
           <nav className="hidden md:flex items-center gap-6">

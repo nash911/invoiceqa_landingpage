@@ -86,8 +86,8 @@ export function HowItWorks() {
                 <Image
                   src="/placeholder-webapp.png"
                   alt="Web App preview"
-                  width={1200}
-                  height={800}
+                  width={1400}
+                  height={900}
                   className="w-full h-auto rounded-xl"
                 />
               </div>
@@ -139,12 +139,12 @@ export function HowItWorks() {
                   </li>
                 </ol>
               </div>
-              <div className="glass rounded-2xl p-4">
+              <div className="glass rounded-2xl p-4 max-w-md mx-auto">
                 <Image
                   src="/placeholder-extension.png"
                   alt="Browser Plugin preview"
-                  width={1200}
-                  height={800}
+                  width={500}
+                  height={700}
                   className="w-full h-auto rounded-xl"
                 />
               </div>

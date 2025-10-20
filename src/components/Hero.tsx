@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
-import Image from "next/image";
 
 export function Hero() {
   const scrollToForm = () => {
@@ -70,22 +69,115 @@ export function Hero() {
             </p>
           </div>
 
-          {/* Right column: Mockup */}
+          {/* Right column: Enhanced Invoice Mockup */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-md">
-              <Image
-                src="/placeholder-hero.png"
-                alt="InvoiceQA validation interface"
-                width={512}
-                height={512}
-                className="w-full h-auto rounded-xl shadow-2xl"
-                priority
-              />
+            <div className="glass rounded-xl shadow-2xl p-6 max-w-md w-full">
+              <div className="space-y-4">
+                {/* Invoice preview with more details */}
+                <div className="bg-background/50 rounded-lg p-4 border">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Invoice #INV-2024-0417
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Vendor: Acme Corp Ltd
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground text-right">
+                      <div>Date: 2024-04-15</div>
+                      <div className="mt-1">Due: 2024-05-15</div>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 text-sm">
+                    <div className="flex justify-between text-xs text-muted-foreground border-b pb-1">
+                      <span>Description</span>
+                      <span>Amount</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs">Professional Services</span>
+                      <span>$1,000.00</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs">Software License</span>
+                      <span>$250.00</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-1.5">
+                      <span>Subtotal</span>
+                      <span>$1,250.00</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>VAT (21%)</span>
+                      <span>$262.50</span>
+                    </div>
+                    <div className="flex justify-between font-bold border-t pt-1.5 mt-1">
+                      <span>Total</span>
+                      <span>$1,512.50</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded Validation results */}
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    Validation Results
+                  </div>
+                  <div className="space-y-1.5">
+                    <ValidationItem
+                      status="success"
+                      text="Math totals verified"
+                    />
+                    <ValidationItem
+                      status="success"
+                      text="VAT calculation correct"
+                    />
+                    <ValidationItem
+                      status="success"
+                      text="Vendor VAT ID valid (NL...)"
+                    />
+                    <ValidationItem
+                      status="success"
+                      text="No duplicate found"
+                    />
+                    <ValidationItem
+                      status="success"
+                      text="Bank details verified"
+                    />
+                    <ValidationItem
+                      status="warning"
+                      text="Due date in 30 days"
+                    />
+                    <ValidationItem
+                      status="success"
+                      text="No fraud risk detected"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function ValidationItem({
+  status,
+  text,
+}: {
+  status: "success" | "warning";
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <div
+        className={`w-2 h-2 rounded-full ${
+          status === "success" ? "bg-green-500" : "bg-amber-500"
+        }`}
+      />
+      <span className="text-muted-foreground">{text}</span>
+    </div>
   );
 }
 
