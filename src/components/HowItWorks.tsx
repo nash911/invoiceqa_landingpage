@@ -24,7 +24,7 @@ export function HowItWorks() {
           </p>
         </div>
 
-        <Tabs defaultValue="webapp" className="max-w-6xl mx-auto">
+        <Tabs defaultValue="webapp" className="max-w-8xl mx-auto">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
             <TabsTrigger value="webapp" onClick={() => handleTabClick("webapp")}>
               Web App
@@ -139,7 +139,7 @@ export function HowItWorks() {
                   </li>
                 </ol>
               </div>
-              <div className="glass rounded-2xl p-4 max-w-md mx-auto">
+              <div className="glass rounded-2xl p-4 max-w-sm mx-auto">
                 <Image
                   src="/placeholder-extension.png"
                   alt="Browser Plugin preview"

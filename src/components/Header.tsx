@@ -41,7 +41,7 @@ export function Header() {
               alt="InvoiceQA"
               width={180}
               height={50}
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
           </div>
           <nav className="hidden md:flex items-center gap-6">
