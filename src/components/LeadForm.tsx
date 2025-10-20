@@ -146,7 +146,7 @@ export function LeadForm() {
               Join the early access list
             </h2>
             <p className="text-sm text-muted-foreground mt-2">
-              We'll email you when your invite is ready.
+              We&apos;ll email you when your invite is ready.
             </p>
           </div>
 
