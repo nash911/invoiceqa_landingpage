@@ -1,67 +1,41 @@
 import Link from "next/link";
-import { Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function Footer() {
-  const calendlyUrl =
-    process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/your-link";
-
   return (
     <footer className="border-t bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
-          <div>
-            <h3 className="font-bold text-lg mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              InvoiceQA
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Catch costly invoice errors — automatically.
-            </p>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4">Get in Touch</h4>
-            <Button variant="outline" asChild className="w-full sm:w-auto">
-              <a
-                href={calendlyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2"
-              >
-                <Calendar className="w-4 h-4" />
-                Request a 5-minute demo
-              </a>
-            </Button>
-          </div>
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-10 text-sm text-muted-foreground sm:flex-row sm:justify-between">
+        <div className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
+          <span className="text-base font-semibold text-foreground">InvoiceQA</span>
+          <p className="max-w-sm">
+            Modern safeguards for AP and bookkeeping teams.
+          </p>
         </div>
-
-        <div className="border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} InvoiceQA. All rights reserved.</p>
-        </div>
+        <nav className="flex flex-wrap items-center justify-center gap-4 text-sm font-medium">
+          <a
+            href="mailto:hello@invoiceqa.com"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Contact
+          </a>
+          <Link
+            href="/terms"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Terms
+          </Link>
+          <Link
+            href="/privacy"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Privacy
+          </Link>
+        </nav>
+      </div>
+      <div className="border-t bg-background/60">
+        <p className="mx-auto max-w-6xl px-4 py-6 text-center text-xs text-muted-foreground">
+          © 2025 Taranuka AB. InvoiceQA is a product of Taranuka AB.
+        </p>
       </div>
     </footer>
   );
 }
-

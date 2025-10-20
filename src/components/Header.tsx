@@ -1,46 +1,58 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "./ThemeProvider";
+import Image from "next/image";
+import Link from "next/link";
+import { useCallback } from "react";
+import type { MouseEvent } from "react";
+import { trackEvent } from "@/lib/analytics";
+
+const navItems: { label: string; href: string; event: string }[] = [
+  { label: "How it works", href: "#how-it-works", event: "nav_how_it_works_click" },
+  { label: "What it checks", href: "#what-it-checks", event: "nav_what_it_checks_click" },
+  { label: "Contact", href: "#lead-form", event: "nav_contact_click" },
+];
 
 export function Header() {
-  const { theme, setTheme } = useTheme();
+  const handleAnchorClick = useCallback((href: string, eventName: string) => {
+    return (event: MouseEvent<HTMLAnchorElement>) => {
+      trackEvent(eventName);
 
-  const toggleTheme = () => {
-    if (theme === "dark") {
-      setTheme("light");
-    } else {
-      setTheme("dark");
-    }
-  };
+      if (href.startsWith("#")) {
+        event.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    };
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              InvoiceQA
-            </h1>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
+    <header className="fixed inset-x-0 top-0 z-50 border-b bg-background/80 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2" aria-label="InvoiceQA home">
+          <Image
+            src="/brand/logo.svg"
+            alt="InvoiceQA"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
+          <span className="text-base font-semibold tracking-tight">InvoiceQA</span>
+        </Link>
+        <nav className="flex items-center gap-6 text-sm font-medium">
+          {navItems.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={handleAnchorClick(item.href, item.event)}
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-          </nav>
-        </div>
+              {item.label}
+            </a>
+          ))}
+        </nav>
       </div>
     </header>
   );
 }
-
