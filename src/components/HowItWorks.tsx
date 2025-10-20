@@ -84,11 +84,12 @@ export function HowItWorks() {
               </div>
               <div className="glass rounded-2xl p-4">
                 <Image
-                  src="/placeholder-webapp.png"
-                  alt="Web App preview"
+                  src="/webapp_demo.gif"
+                  alt="Web App demo"
                   width={1400}
                   height={900}
                   className="w-full h-auto rounded-xl"
+                  unoptimized
                 />
               </div>
             </div>
@@ -139,13 +140,14 @@ export function HowItWorks() {
                   </li>
                 </ol>
               </div>
-              <div className="glass rounded-2xl p-4 max-w-sm mx-auto">
+              <div className="glass rounded-2xl p-4 max-w-md mx-auto">
                 <Image
-                  src="/placeholder-extension.png"
-                  alt="Browser Plugin preview"
+                  src="/plugin_demo.gif"
+                  alt="Browser Plugin demo"
                   width={500}
                   height={700}
                   className="w-full h-auto rounded-xl"
+                  unoptimized
                 />
               </div>
             </div>
