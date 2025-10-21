@@ -140,7 +140,7 @@ export function HowItWorks() {
                   </li>
                 </ol>
               </div>
-              <div className="glass rounded-2xl p-4 max-w-md mx-auto">
+              <div className="glass rounded-2xl p-4">
                 <Image
                   src="/plugin_demo.gif"
                   alt="Browser Plugin demo"
