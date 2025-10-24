@@ -25,18 +25,12 @@ const leadEndpoint = process.env.NEXT_PUBLIC_LEAD_ENDPOINT ?? "/api/lead";
 const leadSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   company: z.string().min(1, "Company is required"),
-  invoices_per_month: z.preprocess(
-    (val) => (val == null ? "" : val),
-    z
-      .string({
-        required_error: "This field is required",
-        invalid_type_error: "This field is required",
-      })
-      .min(1, "This field is required")
-      .refine((val) => ["0-50", "51-200", "201-1k", "1k+"].includes(val), {
-        message: "This field is required",
-      })
-  ),
+  invoices_per_month: z
+    .string()
+    .min(1, "This field is required")
+    .refine((val) => ["0-50", "51-200", "201-1k", "1k+"].includes(val), {
+      message: "This field is required",
+    }),
   website: z.string().max(0, "Invalid field"), // Honeypot
 });
 
@@ -215,8 +209,8 @@ export function LeadForm() {
               </Label>
               <Select
                 value={invoicesPerMonth}
-                onValueChange={(value) =>
-                  setValue("invoices_per_month", value as any, {
+                onValueChange={(value: string) =>
+                  setValue("invoices_per_month", value, {
                     shouldValidate: true,
                     shouldDirty: true,
                   })

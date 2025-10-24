@@ -56,6 +56,29 @@ Follow these steps to set up and run the project locally.
     pnpm install
     ```
 
+    **Fresh install (delete current install and reinstall):**
+
+    To remove the current install and perform a clean install, delete `node_modules` and the lockfile, then reinstall:
+
+    ```bash
+    rm -rf node_modules pnpm-lock.yaml
+    pnpm install
+    ```
+
+    If you use `npm`:
+
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+
+    If you use `yarn`:
+
+    ```bash
+    rm -rf node_modules yarn.lock
+    yarn install
+    ```
+
 3.  **Set up environment variables:**
     Copy the example environment file:
     ```bash
