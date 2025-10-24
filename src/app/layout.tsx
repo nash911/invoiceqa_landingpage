@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -58,7 +58,6 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/site.webmanifest",
-  themeColor: "#2563eb",
   openGraph: {
     title: "InvoiceQA — Catch costly invoice errors before they hit your books",
     description:
@@ -85,6 +84,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({

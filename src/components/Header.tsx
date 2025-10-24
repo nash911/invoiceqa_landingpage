@@ -4,6 +4,7 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "./ThemeProvider";
 import Image from "next/image";
+import Link from "next/link";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -36,13 +37,16 @@ export function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image
-              src="/brand/logo.svg"
-              alt="InvoiceQA"
-              width={180}
-              height={50}
-              className="h-12 w-auto"
-            />
+            <Link href="/" aria-label="Go to home" className="inline-block">
+              <Image
+                src="/brand/logo.svg"
+                alt="InvoiceQA"
+                width={180}
+                height={50}
+                className="h-12 w-auto"
+                priority
+              />
+            </Link>
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <button
@@ -60,7 +64,7 @@ export function Header() {
               What it checks
             </button>
             <a
-              href="mailto:contact@invoiceqa.com"
+              href="mailto:taranukaab@gmail.com"
               onClick={() => {
                 if (typeof window !== "undefined") {
                   window.dispatchEvent(
@@ -106,4 +110,3 @@ export function Header() {
     </header>
   );
 }
-
