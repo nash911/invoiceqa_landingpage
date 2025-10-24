@@ -1,0 +1,21 @@
+{
+  "name": "InvoiceQA",
+  "short_name": "InvoiceQA",
+  "description": "Never pay a wrong invoice again. InvoiceQA flags errors, fraud risks, and approval blockers before you post to the ledger.",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
+
