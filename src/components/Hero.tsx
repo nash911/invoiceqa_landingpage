@@ -87,7 +87,7 @@ export function Hero() {
                     </div>
                     <div className="text-xs text-muted-foreground text-right">
                       <div>Date: 2024-04-15</div>
-                      <div className="mt-1">Due: 2024-05-15</div>
+                      <div className="mt-1">Due: 2024-04-22</div>
                     </div>
                   </div>
                   <div className="space-y-1.5 text-sm">
@@ -146,7 +146,7 @@ export function Hero() {
                     />
                     <ValidationItem
                       status="warning"
-                      text="Due date in 30 days"
+                      text="Due date in 7 days"
                     />
                     <ValidationItem
                       status="success"
