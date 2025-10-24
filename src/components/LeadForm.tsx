@@ -143,10 +143,14 @@ export function LeadForm() {
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Join the early access list
+              Become an Early Adopter
             </h2>
-            <p className="text-sm text-muted-foreground mt-2">
+            {/*<p className="text-sm text-muted-foreground mt-2">
               We&apos;ll email you when your invite is ready.
+            </p>*/}
+            <p className="text-xs text-muted-foreground mt-2">
+              Early adopters will get a say in our product roadmap and a special
+              lifetime discount.
             </p>
           </div>
 
@@ -219,12 +223,13 @@ export function LeadForm() {
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               disabled={isSubmitting || !canSubmit}
             >
-              {isSubmitting ? "Submitting..." : "Join the early access list"}
+              {isSubmitting ? "Submitting..." : "Get Early Access"}
             </Button>
 
             {!canSubmit && dwellTime < 2 && (
               <p className="text-xs text-muted-foreground text-center">
-                Please wait {2 - dwellTime} second{2 - dwellTime !== 1 ? "s" : ""}...
+                Please wait{" "}
+                {2 - dwellTime} second{2 - dwellTime !== 1 ? "s" : ""}...
               </p>
             )}
           </form>

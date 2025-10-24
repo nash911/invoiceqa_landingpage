@@ -52,7 +52,7 @@ export function Hero() {
                 onClick={scrollToForm}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
-                Join the early access list
+                Become an Early Adopter
                 <ArrowDown className="ml-2 h-4 w-4" />
               </Button>
               <Button
@@ -65,7 +65,8 @@ export function Hero() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              No sales spam. Early access only.
+              {/* No sales spam. Early access only. */}
+              We'll only email you when your invite is ready.
             </p>
           </div>
 
@@ -180,4 +181,3 @@ function ValidationItem({
     </div>
   );
 }
-
