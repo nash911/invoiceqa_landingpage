@@ -21,10 +21,22 @@ import { LeadSubmission } from "@/types/lead";
 
 const leadEndpoint = process.env.NEXT_PUBLIC_LEAD_ENDPOINT ?? "/api/lead";
 
+// Make company and invoices_per_month required on the frontend
 const leadSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  company: z.string().optional(),
-  invoices_per_month: z.string().optional(),
+  company: z.string().min(1, "Company is required"),
+  invoices_per_month: z.preprocess(
+    (val) => (val == null ? "" : val),
+    z
+      .string({
+        required_error: "This field is required",
+        invalid_type_error: "This field is required",
+      })
+      .min(1, "This field is required")
+      .refine((val) => ["0-50", "51-200", "201-1k", "1k+"].includes(val), {
+        message: "This field is required",
+      })
+  ),
   website: z.string().max(0, "Invalid field"), // Honeypot
 });
 
@@ -45,6 +57,9 @@ export function LeadForm() {
     watch,
   } = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
+    defaultValues: {
+      invoices_per_month: "",
+    },
   });
 
   const invoicesPerMonth = watch("invoices_per_month");
@@ -166,8 +181,10 @@ export function LeadForm() {
                 id="email"
                 type="email"
                 placeholder="you@company.com"
+                aria-invalid={!!errors.email}
                 {...register("email")}
                 disabled={isSubmitting}
+                required
               />
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -175,26 +192,38 @@ export function LeadForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="company">Company (optional)</Label>
+              <Label htmlFor="company">
+                Company <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="company"
                 type="text"
                 placeholder="Your company name"
+                aria-invalid={!!errors.company}
                 {...register("company")}
                 disabled={isSubmitting}
+                required
               />
+              {errors.company && (
+                <p className="text-sm text-destructive">{errors.company.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="invoices_per_month">
-                Invoices per month? (optional)
+                Invoices per month? <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={invoicesPerMonth}
-                onValueChange={(value) => setValue("invoices_per_month", value)}
+                onValueChange={(value) =>
+                  setValue("invoices_per_month", value as any, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  })
+                }
                 disabled={isSubmitting}
               >
-                <SelectTrigger id="invoices_per_month">
+                <SelectTrigger id="invoices_per_month" aria-required="true" aria-invalid={!!errors.invoices_per_month}>
                   <SelectValue placeholder="Select range" />
                 </SelectTrigger>
                 <SelectContent>
@@ -204,6 +233,9 @@ export function LeadForm() {
                   <SelectItem value="1k+">1k+</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.invoices_per_month && (
+                <p className="text-xs text-muted-foreground">{errors.invoices_per_month.message}</p>
+              )}
             </div>
 
             {/* Honeypot field - hidden from users */}
