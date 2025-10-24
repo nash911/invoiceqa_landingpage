@@ -1,7 +1,6 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import Image from "next/image";
 
 export function HowItWorks() {
   const handleTabClick = (tab: string) => {
@@ -83,13 +82,16 @@ export function HowItWorks() {
                 </ol>
               </div>
               <div className="glass rounded-2xl p-4">
-                <Image
-                  src="/webapp_demo.gif"
-                  alt="Web App demo"
-                  width={1400}
-                  height={900}
+                {/* Replaced the Image GIF with an autoplaying, muted, looped MP4 for a seamless demo */}
+                <video
+                  src="/webapp_demo.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
                   className="w-full h-auto rounded-xl"
-                  unoptimized
+                  aria-label="Web App demo video"
                 />
               </div>
             </div>
@@ -141,13 +143,16 @@ export function HowItWorks() {
                 </ol>
               </div>
               <div className="glass rounded-2xl p-4">
-                <Image
-                  src="/plugin_demo.gif"
-                  alt="Browser Plugin demo"
-                  width={500}
-                  height={700}
+                {/* Replaced the GIF with an autoplaying, muted, looped MP4 for the plugin demo */}
+                <video
+                  src="/plugin_demo.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
                   className="w-full h-auto rounded-xl"
-                  unoptimized
+                  aria-label="Browser Plugin demo video"
                 />
               </div>
             </div>
@@ -157,4 +162,3 @@ export function HowItWorks() {
     </section>
   );
 }
-
