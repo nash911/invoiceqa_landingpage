@@ -66,7 +66,7 @@ export function Hero() {
             </div>
             <p className="text-xs text-muted-foreground">
               {/* No sales spam. Early access only. */}
-              We'll only email you when your invite is ready.
+              We&apos;ll only email you when your invite is ready.
             </p>
           </div>
 
