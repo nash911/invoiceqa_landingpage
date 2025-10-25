@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useUTM } from "./UTMProvider";
 import { LeadSubmission } from "@/types/lead";
+import { CheckCircle } from "lucide-react";
 
 const leadEndpoint = process.env.NEXT_PUBLIC_LEAD_ENDPOINT ?? "/api/lead";
 
@@ -57,6 +58,8 @@ export function LeadForm() {
   });
 
   const invoicesPerMonth = watch("invoices_per_month");
+  const emailValue = watch("email");
+  const isEmailValid = !!emailValue && z.string().email().safeParse(emailValue).success;
 
   // Track dwell time
   useEffect(() => {
@@ -171,15 +174,20 @@ export function LeadForm() {
               <Label htmlFor="email">
                 Email <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@company.com"
-                aria-invalid={!!errors.email}
-                {...register("email")}
-                disabled={isSubmitting}
-                required
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@company.com"
+                  aria-invalid={!!errors.email}
+                  {...register("email")}
+                  disabled={isSubmitting}
+                  required
+                />
+                {isEmailValid && (
+                  <CheckCircle className="h-5 w-5 text-green-500" aria-hidden="true" />
+                )}
+              </div>
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
               )}
