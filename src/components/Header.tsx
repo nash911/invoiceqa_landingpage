@@ -5,9 +5,21 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "./ThemeProvider";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const update = () => {
+      setIsDark(theme === "dark" || (theme === "system" && media.matches));
+    };
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, [theme]);
 
   const toggleTheme = () => {
     if (theme === "dark") {
@@ -39,7 +51,7 @@ export function Header() {
           <div className="flex items-center gap-2">
             <Link href="/" aria-label="Go to home" className="inline-block">
               <Image
-                src="/brand/logo.svg"
+                src={isDark ? "/brand/logo-dark.svg" : "/brand/logo.svg"}
                 alt="InvoiceQA"
                 width={180}
                 height={50}
