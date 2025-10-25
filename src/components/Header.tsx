@@ -50,18 +50,24 @@ export function Header() {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <button
-              onClick={() => scrollToSection("how-it-works", "nav_how_it_works_click")}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              How it works
-            </button>
-            <button
               onClick={() =>
                 scrollToSection("what-it-checks", "nav_what_it_checks_click")
               }
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               What it checks
+            </button>
+            <button
+              onClick={() => scrollToSection("how-it-works", "nav_how_it_works_click")}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              How it works
+            </button>
+            <button
+              onClick={() => scrollToSection("about", "nav_about_click")}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              About
             </button>
             <a
               href="mailto:taranukaab@gmail.com"
