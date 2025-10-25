@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useUTM } from "./UTMProvider";
 import { LeadSubmission } from "@/types/lead";
 import { CheckCircle } from "lucide-react";
+import { Lock } from "lucide-react";
 
 const leadEndpoint = process.env.NEXT_PUBLIC_LEAD_ENDPOINT ?? "/api/lead";
 
@@ -259,6 +260,11 @@ export function LeadForm() {
             >
               {isSubmitting ? "Submitting..." : "Get Early Access"}
             </Button>
+
+            <div className="mt-2 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Your data is secure</span>
+            </div>
 
             {!canSubmit && dwellTime < 2 && (
               <p className="text-xs text-muted-foreground text-center">
