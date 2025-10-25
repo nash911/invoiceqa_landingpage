@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Mail } from "lucide-react";
 
 export function Footer() {
   return (
@@ -8,9 +9,10 @@ export function Footer() {
           <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm">
             <a
               href="mailto:taranukaab@gmail.com"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
             >
-              Contact
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              <span>Contact</span>
             </a>
             <Link
               href="/terms"
@@ -36,4 +38,3 @@ export function Footer() {
     </footer>
   );
 }
-

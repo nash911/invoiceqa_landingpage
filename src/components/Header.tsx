@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "./ThemeProvider";
 import Image from "next/image";
@@ -80,9 +80,10 @@ export function Header() {
                   );
                 }
               }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
             >
-              Contact
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              <span>Contact</span>
             </a>
             <Button
               variant="ghost"
