@@ -32,8 +32,8 @@ export default function PrivacyPage() {
             <p>We collect the following information when you sign up for early access:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Email address (required)</li>
-              <li>Company name (optional)</li>
-              <li>Invoice volume information (optional)</li>
+              <li>Company name (required)</li>
+              <li>Invoice volume information (required)</li>
               <li>UTM parameters for marketing attribution</li>
               <li>IP address and user agent for security purposes</li>
             </ul>
