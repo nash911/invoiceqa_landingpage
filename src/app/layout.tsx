@@ -16,10 +16,13 @@ const mono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://invoiceqa.com";
+const metaDescription =
+  "Stop costly invoice mistakes before they happen. InvoiceQA flags math/tax errors, duplicates, risky bank changes, and fraud signals, assisting AP teams and bookkeepers in doing fast approvals with confidence.";
+
 export const metadata: Metadata = {
   title: "InvoiceQA — Catch costly invoice errors before they hit your books",
-  description:
-    "InvoiceQA helps AP teams and bookkeepers prevent wrong payments with math & tax checks, duplicate detection, bank-change defense, fraud risk signals, and fast approvals.",
+  description: metaDescription,
   keywords: [
     "invoice validation",
     "invoice checking",
@@ -60,8 +63,7 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   openGraph: {
     title: "InvoiceQA — Catch costly invoice errors before they hit your books",
-    description:
-      "InvoiceQA helps AP teams and bookkeepers prevent wrong payments with math & tax checks, duplicate detection, bank-change defense, fraud risk signals, and fast approvals.",
+    description: metaDescription,
     type: "website",
     url: process.env.NEXT_PUBLIC_SITE_URL,
     images: [
@@ -76,8 +78,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "InvoiceQA — Catch costly invoice errors before they hit your books",
-    description:
-      "InvoiceQA helps AP teams and bookkeepers prevent wrong payments with math & tax checks, duplicate detection, bank-change defense, fraud risk signals, and fast approvals.",
+    description: metaDescription,
     images: ["/og-image.png"],
   },
   robots: {
@@ -101,6 +102,38 @@ export default function RootLayout({
         {/* Microsoft Tiles */}
         <meta name="msapplication-TileColor" content="#2563eb" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
+
+        {/* SoftwareApplication JSON-LD */}
+        <Script
+          id="ld-software-application"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "InvoiceQA",
+              applicationCategory: "BusinessApplication",
+              applicationSubCategory: "Accounts Payable automation",
+              operatingSystem: "Web",
+              url: siteUrl,
+              image: `${siteUrl}/og-image.png`,
+              description: metaDescription,
+              publisher: { "@type": "Organization", name: "Taranuka AB" },
+              creator: {
+                "@type": "Person",
+                name: "Avinash Ranganath",
+                url: "https://avinashranganath.com",
+              },
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+                availability: "https://schema.org/PreOrder",
+              },
+            }),
+          }}
+        />
 
         {process.env.NODE_ENV === "production" &&
           process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID && (
