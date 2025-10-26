@@ -77,7 +77,7 @@ export default function ThankYouPage() {
                 className="flex items-center gap-2"
               >
                 <Calendar className="w-4 h-4" />
-                Book a 5-min call
+                Book a 15-min call
               </a>
             </Button>
           </div>
@@ -86,4 +86,3 @@ export default function ThankYouPage() {
     </div>
   );
 }
-
