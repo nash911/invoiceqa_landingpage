@@ -71,7 +71,7 @@ You're officially on the InvoiceQA early access list. Welcome aboard!
 I'm Avinash, the founder building InvoiceQA. I'm creating an intelligent system that catches invoice errors, fraud risks, and duplicates before they cost you time and money.
 
 Here's what you can expect:
-  ✓ Early access invite: You're on the list, and you'll be among the first to get access when we launch
+  ✓ Early access invite: You'll be among the first to get access when we launch
   ✓ Lifetime discount: Early adopters get special pricing
   ✓ Product input: Your feedback shapes what features we prioritize
 
@@ -80,7 +80,6 @@ Quick question: What's the biggest invoice-related headache you deal with today?
 Thanks for your interest,
 Avinash Ranganath
 Founder, InvoiceQA
-Taranuka AB
 
 P.S. If you'd prefer to chat live, grab a 15-minute slot here: ${calendlyUrl}
 I'm talking to as many finance teams as possible to make sure we build something you actually need.
@@ -102,18 +101,18 @@ ${siteUrl}
         <p style="margin:0 0 16px; font-size:16px; color:#334155; line-height:1.7;">I'm Avinash, the founder building InvoiceQA. I'm creating an intelligent system that catches invoice errors, fraud risks, and duplicates before they cost you time and money.</p>
         <p style="margin:0 0 8px; font-size:16px; color:#0f172a; line-height:1.7;"><strong>Here's what you can expect:</strong></p>
         <ul style="list-style:none; padding-left:0; margin:0 0 16px 0;">
-          <li style="margin:6px 0; font-size:16px; color:#334155;">✓ <strong>Early access invite</strong>: You're on the list, and you'll be among the first to get access when we launch</li>
+          <li style="margin:6px 0; font-size:16px; color:#334155;">✓ <strong>Early access invite</strong>: You'll be among the first to get access when we launch</li>
           <li style="margin:6px 0; font-size:16px; color:#334155;">✓ <strong>Lifetime discount</strong>: Early adopters get special pricing</li>
           <li style="margin:6px 0; font-size:16px; color:#334155;">✓ <strong>Product input</strong>: Your feedback shapes what features we prioritize</li>
         </ul>
         <p style="margin:0 0 20px; font-size:16px; color:#334155; line-height:1.7;"><strong>Quick question:</strong> What's the biggest invoice-related headache you deal with today? Duplicate payments? Fraud concerns? Manual checking taking too long? Just hit reply and let me know. Your answer directly influences what features I prioritize.</p>
-        <div style="text-align:center; margin:24px 0 8px;">
+        <p style="margin:0 0 8px; font-size:16px; color:#334155; line-height:1.7;">Thanks for your interest,</p>
+        <p style="margin:0; font-size:16px; color:#0f172a; line-height:1.7;"><strong>Avinash Ranganath</strong><br/>Founder, InvoiceQA</p>
+        <hr style="margin:20px 0; border:none; border-top:1px solid #e2e8f0;"/>
+        <div style="text-align:center; margin:12px 0 8px;">
           <a href="${calendlyUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:12px 18px; background:#2563eb; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:600;">Book a 15‑min call</a>
         </div>
-        <p style="margin:16px 0; font-size:14px; color:#475569; line-height:1.7;"><em>P.S. If you'd prefer to chat live, grab a 15-minute slot here: <a href="${calendlyUrl}" target="_blank" rel="noopener noreferrer">Book a call</a>. I'm talking to as many finance teams as possible to make sure we build something you actually need.</em></p>
-        <hr style="margin:20px 0; border:none; border-top:1px solid #e2e8f0;"/>
-        <p style="margin:0 0 8px; font-size:16px; color:#334155; line-height:1.7;">Thanks for your interest,</p>
-        <p style="margin:0; font-size:16px; color:#0f172a; line-height:1.7;"><strong>Avinash Ranganath</strong><br/>Founder, InvoiceQA<br/>Taranuka AB</p>
+        <p style="margin:16px 0; font-size:14px; color:#475569; line-height:1.7;"><em>P.S. If you'd prefer to chat live, grab a <a href="${calendlyUrl}" target="_blank" rel="noopener noreferrer">15-minute slot</a>. I'm talking to as many finance teams as possible to make sure we build something you actually need.</em></p>
       </div>
       <div style="padding:20px 24px; background:#f8fafc; text-align:center;">
         <p style="margin:0; font-size:12px; color:#64748b;">InvoiceQA • A product by Taranuka AB • <a href="${siteUrl}" style="color:#64748b; text-decoration:underline;">${siteUrl}</a></p>
