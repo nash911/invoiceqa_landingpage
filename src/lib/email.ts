@@ -1,12 +1,13 @@
 import nodemailer from "nodemailer";
 
-function getTransport() {
+function getTransport(): nodemailer.Transporter | null {
   const host = process.env.SMTP_HOST;
   const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   const secureEnv = process.env.SMTP_SECURE;
   const secure = typeof secureEnv === "string" ? secureEnv === "true" : port === 465;
+  const ehloName = process.env.SMTP_EHLO_NAME || "invoiceqa.com";
 
   if (!host || !port || !user || !pass) {
     console.warn("Email disabled: missing SMTP configuration (SMTP_HOST/PORT/USER/PASS)");
@@ -14,6 +15,7 @@ function getTransport() {
   }
 
   return nodemailer.createTransport({
+    name: ehloName,
     host,
     port,
     secure,
@@ -27,15 +29,38 @@ function getTransport() {
   });
 }
 
-function createGmailTransportAlt() {
+function createGmailTransportAlt(): nodemailer.Transporter | null {
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
+  const ehloName = process.env.SMTP_EHLO_NAME || "invoiceqa.com";
   if (!user || !pass) return null;
   // Alternate STARTTLS port
   return nodemailer.createTransport({
+    name: ehloName,
     host: "smtp.gmail.com",
     port: 587,
     secure: false,
+    auth: { user, pass },
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 50,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
+    requireTLS: true,
+  });
+}
+
+function createGmailTransport465(): nodemailer.Transporter | null {
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const ehloName = process.env.SMTP_EHLO_NAME || "invoiceqa.com";
+  if (!user || !pass) return null;
+  return nodemailer.createTransport({
+    name: ehloName,
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: { user, pass },
     pool: true,
     maxConnections: 1,
@@ -132,74 +157,74 @@ ${siteUrl}
     });
   }
 
+  type SMTPError = { response?: string; responseCode?: number; code?: string };
+
   try {
-    await trySend(transport as any);
-  } catch (err: any) {
-    const resp: string | undefined = err?.response;
-    const code: number | undefined = err?.responseCode;
+    await trySend(transport);
+  } catch (err: unknown) {
+    const e = err as SMTPError;
+    const resp: string | undefined = e?.response;
+    const code: number | undefined = e?.responseCode;
     const host = process.env.SMTP_HOST || "";
 
-    // Graceful retry for transient 421/ECONNECTION/ETIMEDOUT
-    const isTransient = code === 421 || err?.code === "ECONNECTION" || err?.code === "ETIMEDOUT";
+    const isTransient = code === 421 || e?.code === "ECONNECTION" || e?.code === "ETIMEDOUT";
     if (isTransient) {
-      console.warn("Transient SMTP error detected (", err?.code || code, ") — retrying...");
-      // two quick retries with backoff
+      console.warn("Transient SMTP error detected (", e?.code || code, ") — retrying...");
       for (const delay of [2000, 5000]) {
         try {
           await sleep(delay);
-          await trySend(transport as any);
+          await trySend(transport);
           console.info("Welcome email sent after retry.");
           return;
-        } catch (e) {
-          // keep looping
+        } catch {
+          // continue
         }
       }
     }
 
-    // Gmail relay 550 fallback (existing)
-    const canRelayFallback = host.includes("smtp-relay.gmail.com") && (code === 550 || /Mail relay denied/i.test(resp || ""));
-    if (canRelayFallback) {
-      console.warn("Primary SMTP relay denied. Falling back to smtp.gmail.com with user auth...");
-      const user = process.env.SMTP_USER;
-      const pass = process.env.SMTP_PASS;
-      if (!user || !pass) {
-        console.error("Fallback failed: missing SMTP_USER/SMTP_PASS");
-        throw err;
+    // Fallbacks for Google SMTP (relay or direct) on transient or relay denial errors
+    const isGoogleRelay = host.includes("smtp-relay.gmail.com");
+    const isGmailHost = host.includes("smtp.gmail.com");
+    if (isGoogleRelay || isGmailHost) {
+      // Try smtp.gmail.com on 465 first
+      const gmail465 = createGmailTransport465();
+      if (gmail465) {
+        try {
+          console.warn("Falling back to smtp.gmail.com:465 (SSL)…");
+          await trySend(gmail465);
+          console.info("Welcome email sent via smtp.gmail.com:465.");
+          return;
+        } catch (e465) {
+          console.error("gmail 465 failed:", e465);
+        }
       }
-      const fallback = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: { user, pass },
-        pool: true,
-        maxConnections: 1,
-        maxMessages: 50,
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000,
-      });
-      try {
-        await trySend(fallback);
-        console.info("Welcome email sent via smtp.gmail.com fallback.");
-        return;
-      } catch (err2) {
-        console.error("Fallback email send failed:", err2);
-        throw err2;
+      // Then try smtp.gmail.com on 587 (STARTTLS)
+      const gmail587 = createGmailTransportAlt();
+      if (gmail587) {
+        try {
+          console.warn("Falling back to smtp.gmail.com:587 (STARTTLS)…");
+          await trySend(gmail587);
+          console.info("Welcome email sent via smtp.gmail.com:587.");
+          return;
+        } catch (e587) {
+          console.error("gmail 587 failed:", e587);
+        }
       }
     }
 
-    // If host is smtp.gmail.com: try alternate port (465<->587)
-    const isGmailHost = host.includes("smtp.gmail.com");
-    if (isGmailHost) {
-      const alt = createGmailTransportAlt();
-      if (alt) {
+    // Specific relay denial still handled here for completeness
+    const canRelayFallback = host.includes("smtp-relay.gmail.com") && (code === 550 || /Mail relay denied/i.test(resp || ""));
+    if (canRelayFallback) {
+      const gmail465 = createGmailTransport465();
+      if (gmail465) {
         try {
-          console.warn("Switching to alternate Gmail port (587 STARTTLS)...");
-          await trySend(alt as any);
-          console.info("Welcome email sent via alternate Gmail transport.");
+          console.warn("Relay denied; using smtp.gmail.com:465 with auth…");
+          await trySend(gmail465);
+          console.info("Welcome email sent via smtp.gmail.com fallback.");
           return;
-        } catch (e) {
-          console.error("Alternate Gmail transport failed:", e);
+        } catch (err2) {
+          console.error("Fallback email send failed:", err2);
+          throw err2;
         }
       }
     }
