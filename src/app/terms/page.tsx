@@ -81,7 +81,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold mb-4">Contact</h2>
             <p>
               If you have any questions about these Terms, please contact us at
-              legal@invoiceqa.com
+              legal@taranuka.com
             </p>
           </section>
         </div>

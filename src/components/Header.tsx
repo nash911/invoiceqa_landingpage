@@ -82,7 +82,7 @@ export function Header() {
               About
             </button>
             <a
-              href="mailto:taranukaab@gmail.com"
+              href="mailto:contact@taranuka.com"
               onClick={() => {
                 if (typeof window !== "undefined") {
                   window.dispatchEvent(

@@ -8,7 +8,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm">
             <a
-              href="mailto:taranukaab@gmail.com"
+              href="mailto:contact@taranuka.com"
               className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
             >
               <Mail className="h-4 w-4" aria-hidden="true" />
