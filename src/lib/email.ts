@@ -13,7 +13,41 @@ function getTransport() {
     return null;
   }
 
-  return nodemailer.createTransport({ host, port, secure, auth: { user, pass } });
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 50,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
+  });
+}
+
+function createGmailTransportAlt() {
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!user || !pass) return null;
+  // Alternate STARTTLS port
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: { user, pass },
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 50,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
+  });
+}
+
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 export async function sendWelcomeEmail(toEmail: string) {
@@ -41,7 +75,7 @@ Here's what you can expect:
   ✓ Lifetime discount: Early adopters get special pricing
   ✓ Product input: Your feedback shapes what features we prioritize
 
-Quick question: What's the biggest invoice-related headache you deal with today? Duplicate payments? Fraud concerns? Manual checking taking too long? Just hit reply and let me know. Your answer directly influences what features we prioritize.
+Quick question: What's the biggest invoice-related headache you deal with today? Duplicate payments? Fraud concerns? Manual checking taking too long? Just hit reply and let me know. Your answer directly influences what features I prioritize.
 
 Thanks for your interest,
 Avinash Ranganath
@@ -56,27 +90,35 @@ ${siteUrl}
 `;
 
   const html = `
-  <div style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji'; line-height:1.6; color:#0f172a;">
-    <p>Hi there,</p>
-    <p>You're officially on the <strong>InvoiceQA early access</strong> list. Welcome aboard!</p>
-    <p>I'm Avinash, the founder building InvoiceQA. I'm creating an intelligent system that catches invoice errors, fraud risks, and duplicates before they cost you time and money.</p>
-    <p><strong>Here's what you can expect:</strong></p>
-    <ul style="list-style:none; padding-left:0; margin:0 0 16px 0;">
-      <li>✓ <strong>Early access invite</strong>: You're on the list, and you'll be among the first to get access when we launch</li>
-      <li>✓ <strong>Lifetime discount</strong>: Early adopters get special pricing</li>
-      <li>✓ <strong>Product input</strong>: Your feedback shapes what features we prioritize</li>
-    </ul>
-    <p><strong>Quick question:</strong> What's the biggest invoice-related headache you deal with today? Duplicate payments? Fraud concerns? Manual checking taking too long? Just hit reply and let me know. Your answer directly influences what features we prioritize.</p>
-    <p>Thanks for your interest,<br/>
-      <strong>Avinash Ranganath</strong><br/>
-      Founder, InvoiceQA<br/>
-      Taranuka AB
-    </p>
-    <p><em>P.S.</em> If you'd prefer to chat live, grab a 15-minute slot here: <a href="${calendlyUrl}" target="_blank" rel="noopener noreferrer">Book a call</a>. I'm talking to as many finance teams as possible to make sure we build something you actually need.</p>
-    <hr style="margin:24px 0; border:none; border-top:1px solid #e2e8f0;"/>
-    <p style="font-size: 12px; color:#64748b;">InvoiceQA - A product by Taranuka AB<br/>
-      <a href="${siteUrl}" target="_blank" rel="noopener noreferrer">${siteUrl}</a>
-    </p>
+  <div style="background:#f6f9fc; padding:24px;">
+    <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:12px; box-shadow:0 8px 24px rgba(15,23,42,0.06); overflow:hidden;">
+      <div style="padding:24px 24px 0; text-align:center;">
+        <img src="${siteUrl}/brand/logo.png" alt="InvoiceQA" width="140" height="40" style="display:inline-block; max-width:140px; height:auto;" />
+      </div>
+      <div style="padding:24px 24px 8px;">
+        <h1 style="margin:0 0 12px; font-size:24px; line-height:1.25; color:#0f172a;">Welcome to InvoiceQA early access 🎉</h1>
+        <p style="margin:0 0 12px; font-size:16px; color:#334155; line-height:1.7;">Hi there,</p>
+        <p style="margin:0 0 12px; font-size:16px; color:#334155; line-height:1.7;">You're officially on the <strong>InvoiceQA early access</strong> list. Welcome aboard!</p>
+        <p style="margin:0 0 16px; font-size:16px; color:#334155; line-height:1.7;">I'm Avinash, the founder building InvoiceQA. I'm creating an intelligent system that catches invoice errors, fraud risks, and duplicates before they cost you time and money.</p>
+        <p style="margin:0 0 8px; font-size:16px; color:#0f172a; line-height:1.7;"><strong>Here's what you can expect:</strong></p>
+        <ul style="list-style:none; padding-left:0; margin:0 0 16px 0;">
+          <li style="margin:6px 0; font-size:16px; color:#334155;">✓ <strong>Early access invite</strong>: You're on the list, and you'll be among the first to get access when we launch</li>
+          <li style="margin:6px 0; font-size:16px; color:#334155;">✓ <strong>Lifetime discount</strong>: Early adopters get special pricing</li>
+          <li style="margin:6px 0; font-size:16px; color:#334155;">✓ <strong>Product input</strong>: Your feedback shapes what features we prioritize</li>
+        </ul>
+        <p style="margin:0 0 20px; font-size:16px; color:#334155; line-height:1.7;"><strong>Quick question:</strong> What's the biggest invoice-related headache you deal with today? Duplicate payments? Fraud concerns? Manual checking taking too long? Just hit reply and let me know. Your answer directly influences what features I prioritize.</p>
+        <div style="text-align:center; margin:24px 0 8px;">
+          <a href="${calendlyUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:12px 18px; background:#2563eb; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:600;">Book a 15‑min call</a>
+        </div>
+        <p style="margin:16px 0; font-size:14px; color:#475569; line-height:1.7;"><em>P.S. If you'd prefer to chat live, grab a 15-minute slot here: <a href="${calendlyUrl}" target="_blank" rel="noopener noreferrer">Book a call</a>. I'm talking to as many finance teams as possible to make sure we build something you actually need.</em></p>
+        <hr style="margin:20px 0; border:none; border-top:1px solid #e2e8f0;"/>
+        <p style="margin:0 0 8px; font-size:16px; color:#334155; line-height:1.7;">Thanks for your interest,</p>
+        <p style="margin:0; font-size:16px; color:#0f172a; line-height:1.7;"><strong>Avinash Ranganath</strong><br/>Founder, InvoiceQA<br/>Taranuka AB</p>
+      </div>
+      <div style="padding:20px 24px; background:#f8fafc; text-align:center;">
+        <p style="margin:0; font-size:12px; color:#64748b;">InvoiceQA • A product by Taranuka AB • <a href="${siteUrl}" style="color:#64748b; text-decoration:underline;">${siteUrl}</a></p>
+      </div>
+    </div>
   </div>`;
 
   async function trySend(currentTransport: nodemailer.Transporter) {
@@ -97,9 +139,27 @@ ${siteUrl}
     const resp: string | undefined = err?.response;
     const code: number | undefined = err?.responseCode;
     const host = process.env.SMTP_HOST || "";
-    const canFallbackToGmail = host.includes("smtp-relay.gmail.com");
 
-    if (canFallbackToGmail && (code === 550 || /Mail relay denied/i.test(resp || ""))) {
+    // Graceful retry for transient 421/ECONNECTION/ETIMEDOUT
+    const isTransient = code === 421 || err?.code === "ECONNECTION" || err?.code === "ETIMEDOUT";
+    if (isTransient) {
+      console.warn("Transient SMTP error detected (", err?.code || code, ") — retrying...");
+      // two quick retries with backoff
+      for (const delay of [2000, 5000]) {
+        try {
+          await sleep(delay);
+          await trySend(transport as any);
+          console.info("Welcome email sent after retry.");
+          return;
+        } catch (e) {
+          // keep looping
+        }
+      }
+    }
+
+    // Gmail relay 550 fallback (existing)
+    const canRelayFallback = host.includes("smtp-relay.gmail.com") && (code === 550 || /Mail relay denied/i.test(resp || ""));
+    if (canRelayFallback) {
       console.warn("Primary SMTP relay denied. Falling back to smtp.gmail.com with user auth...");
       const user = process.env.SMTP_USER;
       const pass = process.env.SMTP_PASS;
@@ -112,6 +172,12 @@ ${siteUrl}
         port: 465,
         secure: true,
         auth: { user, pass },
+        pool: true,
+        maxConnections: 1,
+        maxMessages: 50,
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
       });
       try {
         await trySend(fallback);
@@ -123,6 +189,23 @@ ${siteUrl}
       }
     }
 
+    // If host is smtp.gmail.com: try alternate port (465<->587)
+    const isGmailHost = host.includes("smtp.gmail.com");
+    if (isGmailHost) {
+      const alt = createGmailTransportAlt();
+      if (alt) {
+        try {
+          console.warn("Switching to alternate Gmail port (587 STARTTLS)...");
+          await trySend(alt as any);
+          console.info("Welcome email sent via alternate Gmail transport.");
+          return;
+        } catch (e) {
+          console.error("Alternate Gmail transport failed:", e);
+        }
+      }
+    }
+
     console.error("Failed to send welcome email:", err);
+    throw err;
   }
 }
