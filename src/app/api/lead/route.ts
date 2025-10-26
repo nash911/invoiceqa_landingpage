@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
+import { sendWelcomeEmail } from "@/lib/email";
 
 // Validation schema shared with the client
 const leadSchema = z.object({
@@ -108,6 +109,9 @@ export async function POST(req: NextRequest) {
       console.error("Supabase error:", error);
       return NextResponse.json({ ok: false, error: "Failed to save lead" }, { status: 500 });
     }
+
+    // Send welcome email (best-effort; don't block response)
+    sendWelcomeEmail(data.email).catch((e) => console.error("Email send error:", e));
 
     console.log("Lead captured:", inserted);
     return NextResponse.json({ ok: true }, { status: 200 });
