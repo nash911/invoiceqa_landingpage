@@ -61,7 +61,7 @@ ${siteUrl}
     <p>You're officially on the <strong>InvoiceQA early access</strong> list. Welcome aboard!</p>
     <p>I'm Avinash, the founder building InvoiceQA. I'm creating an intelligent system that catches invoice errors, fraud risks, and duplicates before they cost you time and money.</p>
     <p><strong>Here's what you can expect:</strong></p>
-    <ul>
+    <ul style="list-style:none; padding-left:0; margin:0 0 16px 0;">
       <li>✓ <strong>Early access invite</strong>: You're on the list, and you'll be among the first to get access when we launch</li>
       <li>✓ <strong>Lifetime discount</strong>: Early adopters get special pricing</li>
       <li>✓ <strong>Product input</strong>: Your feedback shapes what features we prioritize</li>
