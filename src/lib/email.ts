@@ -75,6 +75,24 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function describeTransport(t: nodemailer.Transporter): {
+  host?: string;
+  port?: number;
+  secure?: boolean;
+  name?: string;
+} {
+  const info: { host?: string; port?: number; secure?: boolean; name?: string } = {};
+  const maybeOptions = (t as unknown as { options?: unknown }).options;
+  if (maybeOptions && typeof maybeOptions === "object") {
+    const o = maybeOptions as Record<string, unknown>;
+    if (typeof o.host === "string") info.host = o.host;
+    if (typeof o.port === "number") info.port = o.port;
+    if (typeof o.secure === "boolean") info.secure = o.secure;
+    if (typeof o.name === "string") info.name = o.name;
+  }
+  return info;
+}
+
 export async function sendWelcomeEmail(toEmail: string) {
   const transport = getTransport();
   if (!transport) {
@@ -158,12 +176,7 @@ ${siteUrl}
   });
 
   async function trySend(currentTransport: nodemailer.Transporter) {
-    console.log("[email] Sending via", {
-      host: (currentTransport as any).options?.host,
-      port: (currentTransport as any).options?.port,
-      secure: (currentTransport as any).options?.secure,
-      name: (currentTransport as any).options?.name,
-    });
+    console.log("[email] Sending via", describeTransport(currentTransport));
     await currentTransport.sendMail({
       to: toEmail,
       from: fromEnv,
