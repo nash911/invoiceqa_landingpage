@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 function getTransport(): nodemailer.Transporter | null {
   const host = process.env.SMTP_HOST;
@@ -94,11 +95,8 @@ function describeTransport(t: nodemailer.Transporter): {
 }
 
 export async function sendWelcomeEmail(toEmail: string) {
-  const transport = getTransport();
-  if (!transport) {
-    console.warn("[email] Transport not configured; skipping send.");
-    return;
-  }
+  // Prefer Resend if configured (more reliable on Vercel than raw SMTP)
+  const hasResend = !!process.env.RESEND_API_KEY;
 
   const fromEnv = process.env.EMAIL_FROM || "Avinash from InvoiceQA <avinash@taranuka.com>";
   const replyTo = process.env.EMAIL_REPLY_TO || "avinash@taranuka.com";
@@ -170,10 +168,43 @@ ${siteUrl}
     to: toEmail,
     from: fromEnv,
     replyTo,
+    provider: hasResend ? "resend" : "smtp",
     smtpHost: process.env.SMTP_HOST,
     smtpPort: process.env.SMTP_PORT,
     ehlo: process.env.SMTP_EHLO_NAME || "invoiceqa.com",
   });
+
+  // If Resend is available, try it first
+  if (hasResend) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      console.log("[email] Using Resend provider");
+      const res = await resend.emails.send({
+        from: fromEnv,
+        to: [toEmail],
+        subject,
+        text,
+        html,
+        reply_to: replyTo,
+      });
+      if ((res as any).error) {
+        console.error("[email] Resend send failed", (res as any).error);
+        // fall through to SMTP fallback
+      } else {
+        console.info("[email] Resend accepted", res);
+        return;
+      }
+    } catch (re) {
+      console.error("[email] Resend provider error", re);
+      // proceed to SMTP fallback
+    }
+  }
+
+  const transport = getTransport();
+  if (!transport) {
+    console.warn("[email] SMTP transport not configured; email not sent.");
+    return;
+  }
 
   async function trySend(currentTransport: nodemailer.Transporter) {
     console.log("[email] Sending via", describeTransport(currentTransport));
