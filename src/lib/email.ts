@@ -179,7 +179,7 @@ ${siteUrl}
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
       console.log("[email] Using Resend provider");
-      const res = await resend.emails.send({
+      const { data, error } = await resend.emails.send({
         from: fromEnv,
         to: [toEmail],
         subject,
@@ -187,11 +187,11 @@ ${siteUrl}
         html,
         reply_to: replyTo,
       });
-      if ((res as any).error) {
-        console.error("[email] Resend send failed", (res as any).error);
+      if (error) {
+        console.error("[email] Resend send failed", error);
         // fall through to SMTP fallback
       } else {
-        console.info("[email] Resend accepted", res);
+        console.info("[email] Resend accepted", data);
         return;
       }
     } catch (re) {
