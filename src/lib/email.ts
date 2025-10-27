@@ -185,7 +185,7 @@ ${siteUrl}
         subject,
         text,
         html,
-        reply_to: replyTo,
+        replyTo: replyTo,
       });
       if (error) {
         console.error("[email] Resend send failed", error);
