@@ -177,7 +177,7 @@ ${siteUrl}
 
   async function trySend(currentTransport: nodemailer.Transporter) {
     console.log("[email] Sending via", describeTransport(currentTransport));
-    await currentTransport.sendMail({
+    const info: nodemailer.SentMessageInfo = await currentTransport.sendMail({
       to: toEmail,
       from: fromEnv,
       replyTo,
@@ -186,7 +186,12 @@ ${siteUrl}
       html,
       envelope: { from: fromEmail, to: toEmail },
     });
-    console.info("[email] SMTP sendMail resolved");
+    console.info("[email] SMTP sendMail resolved", {
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+      response: info.response,
+    });
   }
 
   type SMTPError = { response?: string; responseCode?: number; code?: string };
