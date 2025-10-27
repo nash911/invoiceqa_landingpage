@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
+import * as Brevo from "@getbrevo/brevo";
 
 function getTransport(): nodemailer.Transporter | null {
   const host = process.env.SMTP_HOST;
@@ -95,7 +96,8 @@ function describeTransport(t: nodemailer.Transporter): {
 }
 
 export async function sendWelcomeEmail(toEmail: string) {
-  // Prefer Resend if configured (more reliable on Vercel than raw SMTP)
+  // Provider flags
+  const hasBrevo = !!process.env.BREVO_API_KEY;
   const hasResend = !!process.env.RESEND_API_KEY;
 
   const fromEnv = process.env.EMAIL_FROM || "Avinash from InvoiceQA <avinash@taranuka.com>";
@@ -103,9 +105,13 @@ export async function sendWelcomeEmail(toEmail: string) {
   const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/your-link";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://invoiceqa.com";
 
-  // Extract bare email for envelope FROM
+  // Extract bare email for envelope FROM and display name
   const fromEmailMatch = /<?([^<>@\s]+@[^<>@\s]+)>?/.exec(fromEnv);
   const fromEmail = fromEmailMatch ? fromEmailMatch[1] : fromEnv;
+  const displayNameMatch = /^\s*([^<]+)</.exec(fromEnv);
+  const fromName = displayNameMatch ? displayNameMatch[1].trim() : undefined;
+  const brevoSenderEmail = process.env.BREVO_SENDER_EMAIL || fromEmail;
+  const brevoSenderName = process.env.BREVO_SENDER_NAME || fromName;
 
   const subject = "Welcome to InvoiceQA early access 🎉";
 
@@ -168,13 +174,37 @@ ${siteUrl}
     to: toEmail,
     from: fromEnv,
     replyTo,
-    provider: hasResend ? "resend" : "smtp",
+    provider: hasBrevo ? "brevo" : hasResend ? "resend" : "smtp",
     smtpHost: process.env.SMTP_HOST,
     smtpPort: process.env.SMTP_PORT,
-    ehlo: process.env.SMTP_EHLO_NAME || "invoiceqa.com",
   });
 
-  // If Resend is available, try it first
+  // 1) Brevo first if configured
+  if (hasBrevo) {
+    try {
+      const api = new Brevo.TransactionalEmailsApi();
+      api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY as string);
+
+      const sendSmtpEmail = new Brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = subject;
+      sendSmtpEmail.htmlContent = html;
+      sendSmtpEmail.textContent = text;
+      sendSmtpEmail.sender = { email: brevoSenderEmail, name: brevoSenderName };
+      sendSmtpEmail.to = [{ email: toEmail }];
+      sendSmtpEmail.replyTo = { email: replyTo };
+
+      console.log("[email] Using Brevo provider");
+      const result = await api.sendTransacEmail(sendSmtpEmail);
+      const messageId = (result as { body?: { messageId?: string } }).body?.messageId;
+      console.info("[email] Brevo accepted", { messageId });
+      return;
+    } catch (brevoErr) {
+      console.error("[email] Brevo provider error", brevoErr);
+      // continue to next provider
+    }
+  }
+
+  // 2) Resend next if configured
   if (hasResend) {
     try {
       const resend = new Resend(process.env.RESEND_API_KEY);
@@ -189,17 +219,16 @@ ${siteUrl}
       });
       if (error) {
         console.error("[email] Resend send failed", error);
-        // fall through to SMTP fallback
       } else {
         console.info("[email] Resend accepted", data);
         return;
       }
     } catch (re) {
       console.error("[email] Resend provider error", re);
-      // proceed to SMTP fallback
     }
   }
 
+  // 3) SMTP fallback
   const transport = getTransport();
   if (!transport) {
     console.warn("[email] SMTP transport not configured; email not sent.");
