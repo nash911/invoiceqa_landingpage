@@ -113,8 +113,6 @@ export async function POST(req: NextRequest) {
     console.log("[lead] Lead captured:", inserted);
     console.log("[lead] Dispatching welcome email", {
       to: data.email,
-      smtpHost: process.env.SMTP_HOST,
-      smtpPort: process.env.SMTP_PORT,
     });
 
     const shouldSync = process.env.EMAIL_SYNC === "true" || process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
@@ -155,4 +153,3 @@ export async function GET() {
 }
 
 export const runtime = "nodejs";
-
