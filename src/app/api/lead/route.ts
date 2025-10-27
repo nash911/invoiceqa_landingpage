@@ -117,19 +117,24 @@ export async function POST(req: NextRequest) {
       smtpPort: process.env.SMTP_PORT,
     });
 
-    if (process.env.EMAIL_SYNC === "true") {
+    const shouldSync = process.env.EMAIL_SYNC === "true" || process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+
+    if (shouldSync) {
+      let emailSent = false;
       try {
         await sendWelcomeEmail(data.email);
+        emailSent = true;
         console.info("[lead] Welcome email sent (sync)", { to: data.email });
       } catch (e) {
         console.error("[lead] Welcome email failed (sync)", e);
       }
-    } else {
-      // Best-effort, non-blocking
-      sendWelcomeEmail(data.email)
-        .then(() => console.info("[lead] Welcome email dispatched (async)", { to: data.email }))
-        .catch((e) => console.error("[lead] Welcome email error (async)", e));
+      return NextResponse.json({ ok: true, emailSent }, { status: 200 });
     }
+
+    // Best-effort, non-blocking (dev only)
+    sendWelcomeEmail(data.email)
+      .then(() => console.info("[lead] Welcome email dispatched (async)", { to: data.email }))
+      .catch((e) => console.error("[lead] Welcome email error (async)", e));
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
@@ -148,3 +153,6 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   return NextResponse.json({ ok: false, error: "Method not allowed" }, { status: 405 });
 }
+
+export const runtime = "nodejs";
+

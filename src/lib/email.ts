@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
-import * as Brevo from "@getbrevo/brevo";
 
 function getTransport(): nodemailer.Transporter | null {
   const host = process.env.SMTP_HOST;
@@ -95,6 +94,54 @@ function describeTransport(t: nodemailer.Transporter): {
   return info;
 }
 
+async function sendViaBrevoHTTP(params: {
+  apiKey: string;
+  sender: { email: string; name?: string };
+  to: { email: string; name?: string }[];
+  subject: string;
+  htmlContent: string;
+  textContent: string;
+  replyTo?: { email: string; name?: string };
+}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+  try {
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "api-key": params.apiKey,
+      },
+      body: JSON.stringify({
+        sender: params.sender,
+        to: params.to,
+        subject: params.subject,
+        htmlContent: params.htmlContent,
+        textContent: params.textContent,
+        replyTo: params.replyTo,
+      }),
+      signal: controller.signal,
+    });
+
+    const status = res.status;
+    let body: unknown = null;
+    try {
+      body = await res.json();
+    } catch {}
+
+    if (!res.ok) {
+      console.error("[email] Brevo HTTP failed", { status, body });
+      throw new Error(`Brevo HTTP ${status}`);
+    }
+
+    const messageId = (body as { messageId?: string } | null)?.messageId;
+    console.info("[email] Brevo HTTP accepted", { status, messageId });
+    return { messageId };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function sendWelcomeEmail(toEmail: string) {
   // Provider flags
   const hasBrevo = !!process.env.BREVO_API_KEY;
@@ -179,27 +226,26 @@ ${siteUrl}
     smtpPort: process.env.SMTP_PORT,
   });
 
-  // 1) Brevo first if configured
+  // 1) Brevo via HTTP if configured
   if (hasBrevo) {
     try {
-      const api = new Brevo.TransactionalEmailsApi();
-      api.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY as string);
-
-      const sendSmtpEmail = new Brevo.SendSmtpEmail();
-      sendSmtpEmail.subject = subject;
-      sendSmtpEmail.htmlContent = html;
-      sendSmtpEmail.textContent = text;
-      sendSmtpEmail.sender = { email: brevoSenderEmail, name: brevoSenderName };
-      sendSmtpEmail.to = [{ email: toEmail }];
-      sendSmtpEmail.replyTo = { email: replyTo };
-
-      console.log("[email] Using Brevo provider");
-      const result = await api.sendTransacEmail(sendSmtpEmail);
-      const messageId = (result as { body?: { messageId?: string } }).body?.messageId;
+      console.log("[email] Using Brevo provider (HTTP)", {
+        sender: brevoSenderEmail,
+        to: toEmail,
+      });
+      const { messageId } = await sendViaBrevoHTTP({
+        apiKey: process.env.BREVO_API_KEY as string,
+        sender: { email: brevoSenderEmail, name: brevoSenderName },
+        to: [{ email: toEmail }],
+        subject,
+        htmlContent: html,
+        textContent: text,
+        replyTo: { email: replyTo },
+      });
       console.info("[email] Brevo accepted", { messageId });
       return;
     } catch (brevoErr) {
-      console.error("[email] Brevo provider error", brevoErr);
+      console.error("[email] Brevo HTTP error", brevoErr);
       // continue to next provider
     }
   }
