@@ -77,7 +77,10 @@ function sleep(ms: number) {
 
 export async function sendWelcomeEmail(toEmail: string) {
   const transport = getTransport();
-  if (!transport) return;
+  if (!transport) {
+    console.warn("[email] Transport not configured; skipping send.");
+    return;
+  }
 
   const fromEnv = process.env.EMAIL_FROM || "Avinash from InvoiceQA <avinash@taranuka.com>";
   const replyTo = process.env.EMAIL_REPLY_TO || "avinash@taranuka.com";
@@ -145,7 +148,22 @@ ${siteUrl}
     </div>
   </div>`;
 
+  console.log("[email] Preparing welcome email", {
+    to: toEmail,
+    from: fromEnv,
+    replyTo,
+    smtpHost: process.env.SMTP_HOST,
+    smtpPort: process.env.SMTP_PORT,
+    ehlo: process.env.SMTP_EHLO_NAME || "invoiceqa.com",
+  });
+
   async function trySend(currentTransport: nodemailer.Transporter) {
+    console.log("[email] Sending via", {
+      host: (currentTransport as any).options?.host,
+      port: (currentTransport as any).options?.port,
+      secure: (currentTransport as any).options?.secure,
+      name: (currentTransport as any).options?.name,
+    });
     await currentTransport.sendMail({
       to: toEmail,
       from: fromEnv,
@@ -155,81 +173,85 @@ ${siteUrl}
       html,
       envelope: { from: fromEmail, to: toEmail },
     });
+    console.info("[email] SMTP sendMail resolved");
   }
 
   type SMTPError = { response?: string; responseCode?: number; code?: string };
 
   try {
     await trySend(transport);
+    console.info("[email] Welcome email sent on primary transport", {
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+    });
   } catch (err: unknown) {
     const e = err as SMTPError;
     const resp: string | undefined = e?.response;
     const code: number | undefined = e?.responseCode;
     const host = process.env.SMTP_HOST || "";
 
+    console.error("[email] Primary transport failed", { code, resp, err });
+
     const isTransient = code === 421 || e?.code === "ECONNECTION" || e?.code === "ETIMEDOUT";
     if (isTransient) {
-      console.warn("Transient SMTP error detected (", e?.code || code, ") — retrying...");
+      console.warn("[email] Transient error — will retry", { code: e?.code || code });
       for (const delay of [2000, 5000]) {
         try {
+          console.log("[email] Retry after", delay, "ms");
           await sleep(delay);
           await trySend(transport);
-          console.info("Welcome email sent after retry.");
+          console.info("[email] Welcome email sent after retry");
           return;
-        } catch {
-          // continue
+        } catch (re) {
+          console.error("[email] Retry failed", re);
         }
       }
     }
 
-    // Fallbacks for Google SMTP (relay or direct) on transient or relay denial errors
     const isGoogleRelay = host.includes("smtp-relay.gmail.com");
     const isGmailHost = host.includes("smtp.gmail.com");
     if (isGoogleRelay || isGmailHost) {
-      // Try smtp.gmail.com on 465 first
       const gmail465 = createGmailTransport465();
       if (gmail465) {
         try {
-          console.warn("Falling back to smtp.gmail.com:465 (SSL)…");
+          console.warn("[email] Fallback to smtp.gmail.com:465");
           await trySend(gmail465);
-          console.info("Welcome email sent via smtp.gmail.com:465.");
+          console.info("[email] Welcome email sent via gmail:465");
           return;
         } catch (e465) {
-          console.error("gmail 465 failed:", e465);
+          console.error("[email] gmail:465 failed", e465);
         }
       }
-      // Then try smtp.gmail.com on 587 (STARTTLS)
       const gmail587 = createGmailTransportAlt();
       if (gmail587) {
         try {
-          console.warn("Falling back to smtp.gmail.com:587 (STARTTLS)…");
+          console.warn("[email] Fallback to smtp.gmail.com:587");
           await trySend(gmail587);
-          console.info("Welcome email sent via smtp.gmail.com:587.");
+          console.info("[email] Welcome email sent via gmail:587");
           return;
         } catch (e587) {
-          console.error("gmail 587 failed:", e587);
+          console.error("[email] gmail:587 failed", e587);
         }
       }
     }
 
-    // Specific relay denial still handled here for completeness
     const canRelayFallback = host.includes("smtp-relay.gmail.com") && (code === 550 || /Mail relay denied/i.test(resp || ""));
     if (canRelayFallback) {
       const gmail465 = createGmailTransport465();
       if (gmail465) {
         try {
-          console.warn("Relay denied; using smtp.gmail.com:465 with auth…");
+          console.warn("[email] Relay denied; using gmail:465 fallback");
           await trySend(gmail465);
-          console.info("Welcome email sent via smtp.gmail.com fallback.");
+          console.info("[email] Welcome email sent via gmail fallback");
           return;
         } catch (err2) {
-          console.error("Fallback email send failed:", err2);
+          console.error("[email] gmail fallback failed", err2);
           throw err2;
         }
       }
     }
 
-    console.error("Failed to send welcome email:", err);
+    console.error("[email] Final failure — email not sent", { code, resp });
     throw err;
   }
 }

@@ -106,14 +106,31 @@ export async function POST(req: NextRequest) {
       if ((error as { code?: string; message?: string }).code === "23505" || error.message?.includes("duplicate")) {
         return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
       }
-      console.error("Supabase error:", error);
+      console.error("[lead] Supabase insert error:", error);
       return NextResponse.json({ ok: false, error: "Failed to save lead" }, { status: 500 });
     }
 
-    // Send welcome email (best-effort; don't block response)
-    sendWelcomeEmail(data.email).catch((e) => console.error("Email send error:", e));
+    console.log("[lead] Lead captured:", inserted);
+    console.log("[lead] Dispatching welcome email", {
+      to: data.email,
+      smtpHost: process.env.SMTP_HOST,
+      smtpPort: process.env.SMTP_PORT,
+    });
 
-    console.log("Lead captured:", inserted);
+    if (process.env.EMAIL_SYNC === "true") {
+      try {
+        await sendWelcomeEmail(data.email);
+        console.info("[lead] Welcome email sent (sync)", { to: data.email });
+      } catch (e) {
+        console.error("[lead] Welcome email failed (sync)", e);
+      }
+    } else {
+      // Best-effort, non-blocking
+      sendWelcomeEmail(data.email)
+        .then(() => console.info("[lead] Welcome email dispatched (async)", { to: data.email }))
+        .catch((e) => console.error("[lead] Welcome email error (async)", e));
+    }
+
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
     console.error("Lead submission error:", error);
