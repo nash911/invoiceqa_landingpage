@@ -92,7 +92,7 @@ ${siteUrl}
   <div style="background:#f6f9fc; padding:24px;">
     <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:12px; box-shadow:0 8px 24px rgba(15,23,42,0.06); overflow:hidden;">
       <div style="padding:24px 24px 0; text-align:center;">
-        <img src="${siteUrl}/brand/logo.png" alt="InvoiceQA" width="140" height="40" style="display:inline-block; max-width:140px; height:auto;" />
+        <img src="${siteUrl}/brand/logo-bluegray.png" alt="InvoiceQA" width="140" height="40" style="display:inline-block; max-width:140px; height:auto;" />
       </div>
       <div style="padding:24px 24px 8px;">
         <h1 style="margin:0 0 12px; font-size:24px; line-height:1.25; color:#0f172a;">Welcome to InvoiceQA early access 🎉</h1>
