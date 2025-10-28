@@ -1,9 +1,12 @@
 #!/usr/bin/env tsx
 /*
 Usage:
-  pnpm run test:webhook                  # delivered for default email
+  pnpm run test:webhook                  # single delivered for default email
   pnpm run test:webhook -- --email you@example.com --event delivered
-  pnpm run test:webhook -- --email you@example.com --event hard_bounce
+  pnpm run test:webhook -- --email you@example.com other@ex.com --event delivered hard_bounce --batch
+
+Env:
+  WEBHOOK_BASE_URL (default http://localhost:3000)
 */
 
 import { config as loadEnv } from "dotenv";
@@ -30,13 +33,55 @@ function getArg(name: string, fallback?: string) {
   if (idx >= 0 && idx + 1 < args.length) return args[idx + 1];
   return fallback;
 }
+function getAll(name: string, fallback?: string[]) {
+  const idx = args.indexOf(`--${name}`);
+  if (idx >= 0 && idx + 1 < args.length) {
+    const rest = args.slice(idx + 1);
+    return rest.filter((v) => !v.startsWith("--"));
+  }
+  return fallback;
+}
+function hasFlag(name: string) {
+  return args.includes(`--${name}`);
+}
 
-const email = getArg("email", "nash911@gmail.com") as string;
-const event = (getArg("event", "delivered") as string).toLowerCase();
 const baseUrl = process.env.WEBHOOK_BASE_URL || "http://localhost:3000";
 const url = `${baseUrl}/api/email-webhook`;
 
-const payload = { event, email, date: new Date().toISOString(), messageId: "test-message-id" };
+const batch = hasFlag("batch");
+const emails = getAll("email");
+const events = getAll("event");
+
+// Default data
+const defaultSingle = { email: "nash911@gmail.com", event: "delivered" };
+const defaultBatch = [
+  { email: "nash911@gmail.com", event: "delivered" },
+  { email: "nash911@gmx.com", event: "hard_bounce" },
+];
+
+let payload: unknown;
+if (batch) {
+  // Build array payload from supplied emails/events; zip events or reuse first.
+  const arr: { email: string; event: string; date: string; messageId: string }[] = [];
+  if (emails && emails.length) {
+    const evs = events && events.length ? events : [events?.[0] || "delivered"]; // use first event or default
+    for (let i = 0; i < emails.length; i++) {
+      const email = emails[i];
+      const event = evs[i] || evs[0] || "delivered";
+      arr.push({ email, event: event.toLowerCase(), date: new Date().toISOString(), messageId: `test-${i + 1}` });
+    }
+  } else {
+    for (let i = 0; i < defaultBatch.length; i++) {
+      const d = defaultBatch[i];
+      arr.push({ email: d.email, event: d.event, date: new Date().toISOString(), messageId: `test-${i + 1}` });
+    }
+  }
+  payload = arr;
+} else {
+  const email = getArg("email", defaultSingle.email) as string;
+  const event = (getArg("event", defaultSingle.event) as string).toLowerCase();
+  payload = { event, email, date: new Date().toISOString(), messageId: "test-message-id" };
+}
 
 (async () => {
   try {

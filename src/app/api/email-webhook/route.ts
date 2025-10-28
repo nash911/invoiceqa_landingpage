@@ -8,34 +8,72 @@ function getSupabaseService() {
   return createClient(url, key);
 }
 
+type BrevoEvent = {
+  email?: string;
+  event?: string;
+  messageId?: string;
+  reason?: string;
+  date?: string;
+  // Allow unknown extra fields without using `any`
+  [key: string]: unknown;
+};
+
+function toBrevoEvent(u: unknown): BrevoEvent {
+  if (u && typeof u === "object") {
+    const o = u as Record<string, unknown>;
+    return {
+      email: typeof o.email === "string" ? o.email : undefined,
+      event: typeof o.event === "string" ? o.event : undefined,
+      messageId: typeof o.messageId === "string" ? o.messageId : undefined,
+      reason: typeof o.reason === "string" ? o.reason : undefined,
+      date: typeof o.date === "string" ? o.date : undefined,
+    };
+  }
+  return {};
+}
+
 // Brevo webhook endpoint
 // Configure Brevo to POST delivery events to /api/email-webhook
 // We expect JSON payloads with fields like: event, email, messageId, reason, date, etc.
 export async function POST(req: NextRequest) {
-  let body: any;
+  let raw: unknown;
   try {
-    body = await req.json();
+    raw = await req.json();
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
   }
 
-  // Brevo can send batch or single events. Normalize to array.
-  const events = Array.isArray(body) ? body : [body];
+  const arr = Array.isArray(raw) ? raw : [raw];
+  const events: BrevoEvent[] = arr.map(toBrevoEvent);
 
   const supabase = getSupabaseService();
 
   let updated = 0;
   for (const ev of events) {
-    const email = ev?.email as string | undefined;
-    const evt = (ev?.event as string | undefined)?.toLowerCase();
+    const email = ev.email;
+    const evt = ev.event?.toLowerCase();
 
     if (!email || !evt) continue;
 
     // Determine validation status
-    const isBounce = ["hard_bounce", "soft_bounce", "blocked", "invalid_email", "deferred", "error"].includes(evt);
-    const isDelivered = ["delivered", "sent"].includes(evt);
+    const isBounce = [
+      "bounces",
+      "hard_bounce",
+      "soft_bounce",
+      "blocked",
+      "invalid_email",
+      "deferred",
+      "error",
+    ].includes(evt);
+    const isDelivered = [
+        "delivered",
+        "sent",
+        "requests",
+        "queued",
+        "processed"
+    ].includes(evt);
 
-    const email_validated = isDelivered ? true : isBounce ? false : undefined;
+    const email_validated: boolean | undefined = isDelivered ? true : isBounce ? false : undefined;
 
     if (typeof email_validated === "boolean") {
       const { error } = await supabase
@@ -55,4 +93,3 @@ export async function GET() {
 }
 
 export const runtime = "nodejs";
-
