@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
       user_agent: req.headers.get("user-agent") ?? null,
       ip,
       referer: req.headers.get("referer") || req.headers.get("referrer") || null,
+      early_access: process.env.EARLY_ACCESS === "true",
     };
 
     const { data: inserted, error } = await supabase.from("leads").insert([leadRow]).select();
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
       } catch (e) {
         console.error("[lead] Welcome email failed (sync)", e);
       }
-      return NextResponse.json({ ok: true, emailSent }, { status: 200 });
+      return NextResponse.json({ ok: true, emailSent, early_access: leadRow.early_access }, { status: 200 });
     }
 
     // Best-effort, non-blocking (dev only)

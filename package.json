@@ -9,7 +9,9 @@
     "lint": "eslint",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "type-check": "tsc --noEmit",
-    "test:email": "tsx scripts/test-email.ts"
+    "test:email": "tsx scripts/test-email.ts",
+    "test:webhook": "tsx scripts/test-webhook.ts",
+    "check:leads": "tsx scripts/check-leads.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
