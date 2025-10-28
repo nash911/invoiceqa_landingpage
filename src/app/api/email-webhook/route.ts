@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   let updated = 0;
   for (const ev of events) {
-    const email = ev.email;
+    const email = ev.email?.trim().toLowerCase();
     const evt = ev.event?.toLowerCase();
 
     if (!email || !evt) continue;
