@@ -67,7 +67,12 @@ export async function sendWelcomeEmail(toEmail: string) {
   const brevoSenderEmail = process.env.BREVO_SENDER_EMAIL || fromEmail;
   const brevoSenderName = process.env.BREVO_SENDER_NAME || fromName;
 
-  const minimal = process.env.EMAIL_WELCOME_MINIMAL === "true";
+  // A/B switch: when enabled, Gmail recipients get minimal; others get rich
+  const abGmailMinimal = process.env.EMAIL_WELCOME_AB_GMAIL_MINIMAL === "true";
+  const isGmail = /@(gmail\.com|googlemail\.com)$/i.test(toEmail);
+
+  // Resolve minimal mode: AB logic takes precedence, else fall back to env flag
+  const minimal = abGmailMinimal ? isGmail : process.env.EMAIL_WELCOME_MINIMAL === "true";
   const noLinks = process.env.EMAIL_WELCOME_NO_LINKS === "true";
   const subject = minimal
     ? "Welcome to InvoiceQA early access"
@@ -103,7 +108,7 @@ Quick question: What's the biggest invoice-related headache you deal with today?
 Thanks for your interest,
 Avinash Ranganath
 Founder, InvoiceQA
-${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot here: ${calendlyUrl}\nI'm talking to as many finance teams as possible to make sure we build something you actually need.`}
+${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot here: ${calendlyUrl}\nI'm talkin   g to as many finance teams as possible to make sure we build something you actually need.`}
 \nInvoiceQA - A product by Taranuka AB\n${siteUrl}`;
 
   const text = minimal ? textMinimal : textRich;
@@ -121,7 +126,7 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
       </ul>
       <p style="margin:0 0 12px;line-height:1.6;">Quick question: what's the biggest invoice‑related headache for you? Just hit reply.</p>
       <p style="margin:0 0 12px;line-height:1.6;">Thanks,<br/><strong>Avinash Ranganath</strong><br/>Founder, InvoiceQA</p>
-      ${noLinks ? "" : `<p style=\"margin:12px 0;line-height:1.6;color:#475569;\"><em>P.S. If you'd prefer to chat live, grab a <a href=\"${calendlyUrl}\" style=\"color:#2563eb;text-decoration:underline;\">15-minute slot</a>.</em></p>`}
+      ${noLinks ? "" : `<p style=\"margin:12px 0;line-height:1.6;color:#475569;\"><em>P.S. If you'd prefer to chat live, grab a <a href=\"${calendlyUrl}\" style=\"color:#2563eb;text-decoration:underline;\">15-minute slot</a>. I'm talking to as many finance teams as possible to make sure we build something you actually need.</em></p>`}
     </div>
   </div>`;
 
@@ -129,7 +134,7 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
   <div style="background:#f6f9fc; padding:24px;">
     <div style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:12px; box-shadow:0 8px 24px rgba(15,23,42,0.06); overflow:hidden;">
       <div style="padding:24px 24px 0; text-align:center;">
-        <img src="${siteUrl}/brand/logo.png" alt="InvoiceQA" width="140" height="40" style="display:inline-block; max-width:140px; height:auto;" />
+        <img src="${siteUrl}/brand/logo-bluegray.png" alt="InvoiceQA" width="140" height="40" style="display:inline-block; max-width:140px; height:auto;" />
       </div>
       <div style="padding:24px 24px 8px;">
         <h1 style="margin:0 0 12px; font-size:24px; line-height:1.25; color:#0f172a;">Welcome to InvoiceQA early access 🎉</h1>
@@ -162,6 +167,9 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
     from: fromEnv,
     replyTo,
     provider: hasBrevo ? "brevo" : "disabled",
+    abGmailMinimal,
+    isGmail,
+    chosenVariant: minimal ? "minimal" : "rich",
   });
   console.log('Brevo API Key:', process.env.BREVO_API_KEY ? 'present' : 'missing');
 
@@ -171,6 +179,9 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
   }
 
   try {
+    const tags = ["transactional", "welcome", minimal ? "variant-minimal" : "variant-rich"] as string[];
+    if (abGmailMinimal) tags.push(isGmail ? "ab-gmail-minimal" : "ab-nongmail-rich");
+
     const { messageId } = await sendViaBrevoHTTP({
       apiKey: process.env.BREVO_API_KEY as string,
       sender: { email: brevoSenderEmail, name: brevoSenderName },
@@ -179,7 +190,7 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
       htmlContent: html,
       textContent: text,
       replyTo: { email: replyTo },
-      tags: ["transactional", "welcome"],
+      tags,
     });
     console.info("[email] Brevo accepted", { messageId });
   } catch (err) {

@@ -12,7 +12,6 @@ const PLACEHOLDER_LIST: string[] = [
   "avinash@inshelf.com",
   "taranukaab@gmail.com",
   "avinash@amsinform.com",
-  "nash911@gmx.com",
 ];
 
 function isEmailLike(s: string) {
