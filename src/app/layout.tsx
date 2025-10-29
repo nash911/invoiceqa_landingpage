@@ -103,6 +103,25 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#2563eb" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
 
+        {/* Google tag (gtag.js) */}
+        <Script
+          id="ga-tag"
+          src="https://www.googletagmanager.com/gtag/js?id=G-L30TPM8F9G"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="ga-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-L30TPM8F9G');
+            `,
+          }}
+        />
+
         {/* SoftwareApplication JSON-LD */}
         <Script
           id="ld-software-application"
