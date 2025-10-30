@@ -30,7 +30,7 @@ const leadSchema = z.object({
   invoices_per_month: z
     .string()
     .min(1, "This field is required")
-    .refine((val) => ["0-50", "51-200", "201-1k", "1k+"].includes(val), {
+    .refine((val) => ["0-50", "51-200", "201-500", "501-1k", "1k+"].includes(val), {
       message: "This field is required",
     }),
   website: z.string().max(0, "Invalid field"), // Honeypot
@@ -232,7 +232,8 @@ export function LeadForm() {
                 <SelectContent>
                   <SelectItem value="0-50">0–50</SelectItem>
                   <SelectItem value="51-200">51–200</SelectItem>
-                  <SelectItem value="201-1k">201–1k</SelectItem>
+                  <SelectItem value="201-500">201–500</SelectItem>
+                  <SelectItem value="501-1k">501–1k</SelectItem>
                   <SelectItem value="1k+">1k+</SelectItem>
                 </SelectContent>
               </Select>
