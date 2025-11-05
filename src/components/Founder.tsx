@@ -83,17 +83,18 @@ export function Founder() {
                 machines to catch what humans miss. After years of building
                 intelligent systems across different industries, one pattern kept
                 emerging: finance teams were still manually checking invoices,
-                wasting hours on work that automation should handle.
+                wasting hours on work that automation should handle efficiently.
               </p>
               <p>
                 The solution isn&apos;t better accounting software — it&apos;s
                 better intelligence. InvoiceQA applies the same techniques used to
                 detect fraud, spot anomalies, and validate complex data in other
-                domains, now focused entirely on your invoices.
+                domains, now focused entirely on catching invoice errors.
               </p>
               <p>
-                Currently building as a one-person company and validating demand.
-                Early adopters will have direct input into what gets built next.
+                Currently building as a one-person company and looking for
+                early users who want to shape the product. Early adopters will
+                have direct input into features, pricing, and roadmap decisions.
               </p>
             </div>
           </div>
