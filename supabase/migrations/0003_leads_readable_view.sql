@@ -7,6 +7,7 @@ select
   invoices_per_month,
   early_access,
   email_validated,
+  unsubscribe,
   utm_source,
   utm_medium,
   utm_campaign,

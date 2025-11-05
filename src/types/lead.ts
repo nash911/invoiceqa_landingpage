@@ -2,6 +2,7 @@ export interface LeadFormData {
   email: string;
   company?: string;
   invoices_per_month?: string;
+  unsubscribe?: boolean | null;
 }
 
 export interface UTMParams {
