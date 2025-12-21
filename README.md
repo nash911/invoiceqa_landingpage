@@ -219,7 +219,7 @@ Test welcome email delivery via Brevo.
 # Send to default email (nash911@gmail.com)
 pnpm test:email
 
-# Send to a specific email
+# Send to a specific email (sends and checks delivery status)
 pnpm test:email user@example.com
 
 # Send to multiple emails (comma-separated)
@@ -230,7 +230,47 @@ pnpm test:email --to user1@example.com user2@example.com
 
 # Send to a predefined list of test recipients
 pnpm test:email --list
+
+# Send without checking delivery status (faster)
+pnpm test:email user@example.com --no-check
+
+# Enable debug mode to see raw Brevo events
+pnpm test:email user@example.com --debug
 ```
+
+The script will:
+1. Send the welcome email via Brevo API
+2. Poll Brevo's events API to check delivery status (up to 120 seconds)
+3. Report the final status: `DELIVERED`, `HARD_BOUNCE`, `SOFT_BOUNCE`, `BLOCKED`, `ERROR`, or `PENDING`
+
+**Output example:**
+```
+═══════════════════════════════════════════════════════════════
+  InvoiceQA Welcome Email Test Script
+═══════════════════════════════════════════════════════════════
+  Recipients: 1
+  Check delivery: Yes (polling Brevo API)
+───────────────────────────────────────────────────────────────
+
+📧 Sending to: user@example.com
+   ✓ Sent (messageId: <abc123...>)
+   ⏳ Checking delivery status ......
+   📊 Status: DELIVERED
+
+───────────────────────────────────────────────────────────────
+  SUMMARY
+───────────────────────────────────────────────────────────────
+  Total: 1
+  ✓ Delivered: 1
+  ✗ Bounced: 0
+  ⚠ Errors: 0
+  ⏳ Pending/Unknown: 0
+```
+
+**Flags:**
+- `--no-check` / `--skip-check`: Skip delivery status polling (faster, just send)
+- `--debug`: Show raw Brevo events for troubleshooting
+- `--list`: Send to a predefined list of test recipients
 
 **Required env vars:** `BREVO_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`
 
