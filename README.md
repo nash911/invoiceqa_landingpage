@@ -150,6 +150,124 @@ pnpm audit:email-imports
 
 This lists all files importing the email module. Ensure none are client components (files with `'use client'` directive).
 
+## Email Validation via Brevo Webhooks
+
+When a lead submits the form, a welcome email is sent via Brevo. To detect invalid/fake emails (e.g., from bots), the system uses Brevo webhooks to track email delivery status.
+
+### How It Works
+
+1. **Lead submits form** → Record created in `leads` table with `email_validated = NULL`
+2. **Welcome email sent** → Brevo attempts delivery
+3. **Brevo sends webhook** → Based on delivery outcome:
+   - `delivered` → Sets `email_validated = true`
+   - `hard_bounce` / `soft_bounce` / `error` / `blocked` / `invalid_email` → Sets `email_validated = false`
+4. **Webhook endpoint** → `POST /api/email-webhook` receives events and updates the `leads` table
+
+### Configuring Brevo Webhooks
+
+1. Log in to your [Brevo account](https://app.brevo.com/)
+2. Navigate to **Transactional** → **Settings** → **Webhooks**
+3. Click **Add a new webhook**
+4. Configure the webhook:
+   - **URL**: `https://yourdomain.com/api/email-webhook`
+   - **Events to track**:
+     - ✅ `delivered`
+     - ✅ `hard_bounce`
+     - ✅ `soft_bounce`
+     - ✅ `error`
+     - ✅ `blocked`
+     - ✅ `invalid_email`
+5. Save the webhook
+
+### Testing Webhooks Locally
+
+Use the `test-webhook.ts` script to simulate Brevo webhook events:
+
+```bash
+# Simulate a delivered event
+pnpm test:webhook -- --email test@example.com --event delivered
+
+# Simulate a hard bounce
+pnpm test:webhook -- --email bot@fake.com --event hard_bounce
+
+# Run a batch test with multiple events
+pnpm test:webhook -- --batch
+```
+
+### Verifying Email Validation Status
+
+Use the `check-leads.ts` script to inspect lead records:
+
+```bash
+pnpm check:leads -- --email test@example.com
+```
+
+The `email_validated` field will show:
+- `true` — Email was successfully delivered
+- `false` — Email bounced or was rejected
+- `null` — Webhook not yet received (or email not sent)
+
+## Scripts
+
+The `scripts/` directory contains CLI utilities for testing and debugging. All scripts automatically load environment variables from `.env.local`.
+
+### test-email.ts
+
+Test welcome email delivery via Brevo.
+
+```bash
+# Send to default email (nash911@gmail.com)
+pnpm test:email
+
+# Send to a specific email
+pnpm test:email user@example.com
+
+# Send to multiple emails (comma-separated)
+pnpm test:email user1@example.com,user2@example.com
+
+# Send to multiple emails (space-separated with --to flag)
+pnpm test:email --to user1@example.com user2@example.com
+
+# Send to a predefined list of test recipients
+pnpm test:email --list
+```
+
+**Required env vars:** `BREVO_API_KEY`, `EMAIL_FROM`, `EMAIL_REPLY_TO`
+
+### test-webhook.ts
+
+Simulate Brevo webhook events (e.g., `delivered`, `hard_bounce`) to test the `/api/email-webhook` endpoint.
+
+```bash
+# Send a single "delivered" event for the default email
+pnpm test:webhook
+
+# Send a specific event for a specific email
+pnpm test:webhook -- --email user@example.com --event delivered
+
+# Send a batch of events
+pnpm test:webhook -- --batch
+
+# Send batch with custom emails and events
+pnpm test:webhook -- --email a@example.com b@example.com --event delivered hard_bounce --batch
+```
+
+**Optional env var:** `WEBHOOK_BASE_URL` (defaults to `http://localhost:3000`)
+
+### check-leads.ts
+
+Query the Supabase `leads` table to verify lead records.
+
+```bash
+# Check default test emails
+pnpm check:leads
+
+# Check specific emails
+pnpm check:leads -- --email user@example.com another@example.com
+```
+
+**Required env vars:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+
 ## Tailwind v4 Semantic Tokens (@theme)
 
 This project uses Tailwind CSS v4 with semantic color tokens (shadcn-style) mapped via an `@theme` block.
