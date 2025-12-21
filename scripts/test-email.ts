@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/**
+ * CLI script to test welcome email delivery via Brevo.
+ * Run with: pnpm test:email [email] or pnpm test:email --list
+ */
 import dotenv from "dotenv";
 
 // Load env from .env first, then overlay with .env.local if present

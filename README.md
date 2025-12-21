@@ -138,6 +138,17 @@ To measure performance, run a Lighthouse audit in Chrome DevTools:
 - **Service Role Key**: Keep `SUPABASE_SERVICE_ROLE_KEY` restricted to server-only environments (e.g., Vercel Project → Settings → Environment Variables). Never expose it to the client.
 - **API Endpoint**: The `/api/lead` handler runs inside Next.js and applies a simple in-memory rate limiter plus strict schema validation before touching Supabase.
 - **Bot Protection**: The lead form includes a hidden honeypot field and a minimum dwell time requirement to deter simple bots.
+- **Server-Only Email Module**: The `src/lib/email.ts` module imports `server-only` to prevent accidental client-side bundling. API routes that use it explicitly declare `runtime = 'nodejs'`.
+
+### Auditing Server-Only Imports
+
+To verify that sensitive modules (like `@/lib/email`) are only imported from server-side code:
+
+```bash
+pnpm audit:email-imports
+```
+
+This lists all files importing the email module. Ensure none are client components (files with `'use client'` directive).
 
 ## Tailwind v4 Semantic Tokens (@theme)
 
@@ -183,6 +194,9 @@ This project uses both public and server-only environment variables.
 - Server-only (never expose to client):
   - `SUPABASE_URL` — Supabase project URL used by the Next.js API route.
   - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key used to insert leads (store only in secure server environments such as Vercel project settings).
+  - `BREVO_API_KEY` — Brevo (Sendinblue) API key for sending transactional emails.
+  - `EMAIL_FROM` — Sender email address (e.g., `Avinash Ranganath <no-reply@invoiceqa.com>`).
+  - `EMAIL_REPLY_TO` — Reply-to email address for welcome emails.
 
 Where they’re used
 - Next.js API route: `src/app/api/lead/route.ts`
