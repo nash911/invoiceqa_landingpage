@@ -11,7 +11,8 @@
     "type-check": "tsc --noEmit",
     "test:email": "tsx scripts/test-email.ts",
     "test:webhook": "tsx scripts/test-webhook.ts",
-    "check:leads": "tsx scripts/check-leads.ts"
+    "check:leads": "tsx scripts/check-leads.ts",
+    "audit:email-imports": "grep -rn \"from ['\\\"].*lib/email['\\\"]\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.jsx\" . || true"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -24,10 +25,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",
-    "next": "15.5.6",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "next": "^16.1.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-hook-form": "^7.65.0",
+    "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.12"

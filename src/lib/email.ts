@@ -1,3 +1,5 @@
+import 'server-only';
+
 async function sendViaBrevoHTTP(params: {
   apiKey: string;
   sender: { email: string; name?: string };
@@ -43,7 +45,9 @@ async function sendViaBrevoHTTP(params: {
     }
 
     const messageId = (body as { messageId?: string } | null)?.messageId;
-    console.info("[email] Brevo HTTP accepted", { status, messageId });
+    if (process.env.NODE_ENV !== 'production') {
+      console.info("[email] Brevo HTTP accepted", { status, messageId });
+    }
     return { messageId };
   } finally {
     clearTimeout(timeout);
@@ -162,19 +166,23 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
 
   const html = minimal ? htmlMinimal : htmlRich;
 
-  console.log("[email] Preparing welcome email", {
-    to: toEmail,
-    from: fromEnv,
-    replyTo,
-    provider: hasBrevo ? "brevo" : "disabled",
-    abGmailMinimal,
-    isGmail,
-    chosenVariant: minimal ? "minimal" : "rich",
-  });
-  console.log('Brevo API Key:', process.env.BREVO_API_KEY ? 'present' : 'missing');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("[email] Preparing welcome email", {
+      to: toEmail,
+      from: fromEnv,
+      replyTo,
+      provider: hasBrevo ? "brevo" : "disabled",
+      abGmailMinimal,
+      isGmail,
+      chosenVariant: minimal ? "minimal" : "rich",
+    });
+    console.log('BREVO_API_KEY present:', !!process.env.BREVO_API_KEY);
+  }
 
   if (!hasBrevo) {
-    console.warn("[email] BREVO_API_KEY missing — cannot send email");
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn("[email] BREVO_API_KEY missing — cannot send email");
+    }
     return;
   }
 

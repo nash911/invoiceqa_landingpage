@@ -3,6 +3,8 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { sendWelcomeEmail } from "@/lib/email";
 
+export const runtime = 'nodejs';
+
 // Validation schema shared with the client
 const leadSchema = z.object({
   email: z.string().email(),
@@ -152,5 +154,3 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   return NextResponse.json({ ok: false, error: "Method not allowed" }, { status: 405 });
 }
-
-export const runtime = "nodejs";
