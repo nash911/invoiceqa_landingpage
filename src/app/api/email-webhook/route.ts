@@ -8,12 +8,16 @@ function getSupabaseService() {
   return createClient(url, key);
 }
 
+// Required tags to process - skip webhooks that don't have both
+const REQUIRED_TAGS = ["landing-page", "welcome-email"];
+
 type BrevoEvent = {
   email?: string;
   event?: string;
   messageId?: string;
   reason?: string;
   date?: string;
+  tags?: string[];
   // Allow unknown extra fields without using `any`
   [key: string]: unknown;
 };
@@ -21,15 +25,34 @@ type BrevoEvent = {
 function toBrevoEvent(u: unknown): BrevoEvent {
   if (u && typeof u === "object") {
     const o = u as Record<string, unknown>;
+    // Parse tags - can be string (pipe-separated) or array
+    let tags: string[] | undefined;
+    if (typeof o.tags === "string") {
+      tags = o.tags.split("|").map((t) => t.trim()).filter(Boolean);
+    } else if (Array.isArray(o.tags)) {
+      tags = o.tags.filter((t): t is string => typeof t === "string");
+    } else if (typeof o.tag === "string") {
+      // Brevo sometimes sends "tag" instead of "tags"
+      tags = o.tag.split("|").map((t) => t.trim()).filter(Boolean);
+    }
     return {
       email: typeof o.email === "string" ? o.email : undefined,
       event: typeof o.event === "string" ? o.event : undefined,
       messageId: typeof o.messageId === "string" ? o.messageId : undefined,
       reason: typeof o.reason === "string" ? o.reason : undefined,
       date: typeof o.date === "string" ? o.date : undefined,
+      tags,
     };
   }
   return {};
+}
+
+/**
+ * Check if the event has all required tags (landing-page and welcome-email).
+ */
+function hasRequiredTags(ev: BrevoEvent): boolean {
+  if (!ev.tags || ev.tags.length === 0) return false;
+  return REQUIRED_TAGS.every((tag) => ev.tags!.includes(tag));
 }
 
 // Brevo webhook endpoint
@@ -49,7 +72,14 @@ export async function POST(req: NextRequest) {
   const supabase = getSupabaseService();
 
   let updated = 0;
+  let skipped = 0;
   for (const ev of events) {
+    // Skip events that don't have the required tags (landing-page and welcome-email)
+    if (!hasRequiredTags(ev)) {
+      skipped++;
+      continue;
+    }
+
     const email = ev.email?.trim().toLowerCase();
     const evt = ev.event?.toLowerCase();
 
@@ -85,7 +115,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, updated });
+  return NextResponse.json({ ok: true, updated, skipped });
 }
 
 export async function GET() {

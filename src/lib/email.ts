@@ -187,7 +187,7 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
   }
 
   try {
-    const tags = ["transactional", "welcome", minimal ? "variant-minimal" : "variant-rich"] as string[];
+    const tags = ["landing-page", "welcome-email", minimal ? "variant-minimal" : "variant-rich"] as string[];
     if (abGmailMinimal) tags.push(isGmail ? "ab-gmail-minimal" : "ab-nongmail-rich");
 
     const { messageId } = await sendViaBrevoHTTP({
