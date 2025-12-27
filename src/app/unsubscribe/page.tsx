@@ -151,7 +151,7 @@ export default function UnsubscribePage() {
           <p className="text-sm text-muted-foreground">
             Having trouble?{" "}
             <a
-              href="mailto:support@invoiceqa.com"
+              href="mailto:contact@taranuka.com"
               className="text-blue-600 hover:underline dark:text-blue-400"
             >
               Contact support

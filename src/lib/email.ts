@@ -58,7 +58,7 @@ export async function sendWelcomeEmail(toEmail: string) {
   const hasBrevo = !!process.env.BREVO_API_KEY;
 
   const fromEnv = process.env.EMAIL_FROM || "Avinash Ranganath <no-reply@invoiceqa.com>";
-  const replyTo = process.env.EMAIL_REPLY_TO || "support@invoiceqa.com";
+  const replyTo = process.env.EMAIL_REPLY_TO || "contact@taranuka.com";
   const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/your-link";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://invoiceqa.com";
   const unsubscribeUrl = `${siteUrl}/unsubscribe?email=${encodeURIComponent(toEmail)}`;
