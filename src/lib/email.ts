@@ -61,6 +61,7 @@ export async function sendWelcomeEmail(toEmail: string) {
   const replyTo = process.env.EMAIL_REPLY_TO || "support@invoiceqa.com";
   const calendlyUrl = process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/your-link";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://invoiceqa.com";
+  const unsubscribeUrl = `${siteUrl}/unsubscribe?email=${encodeURIComponent(toEmail)}`;
 
   // Parse display name and address
   const fromEmailMatch = /<?([^<>@\s]+@[^<>@\s]+)>?/.exec(fromEnv);
@@ -95,7 +96,10 @@ Quick question: what's the biggest invoice-related headache for you? Just hit re
 
 Thanks,
 Avinash Ranganath
-Founder, InvoiceQA${noLinks ? "" : `\n\nP.S. If you'd prefer to chat live, grab a 15-minute slot here: ${calendlyUrl}`}`;
+Founder, InvoiceQA${noLinks ? "" : `\n\nP.S. If you'd prefer to chat live, grab a 15-minute slot here: ${calendlyUrl}`}
+
+---
+To unsubscribe from future emails: ${unsubscribeUrl}`;
 
   const textRich = `Hi there,
 
@@ -113,7 +117,12 @@ Thanks for your interest,
 Avinash Ranganath
 Founder, InvoiceQA
 ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot here: ${calendlyUrl}\nI'm talkin   g to as many finance teams as possible to make sure we build something you actually need.`}
-\nInvoiceQA - A product by Taranuka AB\n${siteUrl}`;
+
+---
+InvoiceQA - A product by Taranuka AB
+${siteUrl}
+
+To unsubscribe from future emails: ${unsubscribeUrl}`;
 
   const text = minimal ? textMinimal : textRich;
 
@@ -131,6 +140,10 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
       <p style="margin:0 0 12px;line-height:1.6;">Quick question: what's the biggest invoice‑related headache for you? Just hit reply.</p>
       <p style="margin:0 0 12px;line-height:1.6;">Thanks,<br/><strong>Avinash Ranganath</strong><br/>Founder, InvoiceQA</p>
       ${noLinks ? "" : `<p style=\"margin:12px 0;line-height:1.6;color:#475569;\"><em>P.S. If you'd prefer to chat live, grab a <a href=\"${calendlyUrl}\" style=\"color:#2563eb;text-decoration:underline;\">15-minute slot</a>. I'm talking to as many finance teams as possible to make sure we build something you actually need.</em></p>`}
+      <hr style="margin:16px 0;border:none;border-top:1px solid #e2e8f0;"/>
+      <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;">
+        <a href="${unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a> from future emails
+      </p>
     </div>
   </div>`;
 
@@ -159,7 +172,10 @@ ${noLinks ? "" : `\nP.S. If you'd prefer to chat live, grab a 15-minute slot her
         ${noLinks ? "" : `<p style=\"margin:16px 0; font-size:14px; color:#475569; line-height:1.7;\"><em>P.S. If you'd prefer to chat live, grab a <a href=\"${calendlyUrl}\" target=\"_blank\" rel=\"noopener noreferrer\">15-minute slot</a>. I'm talking to as many finance teams as possible to make sure we build something you actually need.</em></p>`}
       </div>
       <div style="padding:20px 24px; background:#f8fafc; text-align:center;">
-        <p style="margin:0; font-size:12px; color:#64748b;">InvoiceQA • A product by Taranuka AB • <a href="${siteUrl}" style="color:#64748b; text-decoration:underline;">${siteUrl}</a></p>
+        <p style="margin:0 0 8px; font-size:12px; color:#64748b;">InvoiceQA • A product by Taranuka AB • <a href="${siteUrl}" style="color:#64748b; text-decoration:underline;">${siteUrl}</a></p>
+        <p style="margin:0; font-size:11px; color:#94a3b8;">
+          <a href="${unsubscribeUrl}" style="color:#94a3b8; text-decoration:underline;">Unsubscribe</a> from future emails
+        </p>
       </div>
     </div>
   </div>`;
